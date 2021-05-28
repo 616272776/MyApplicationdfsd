@@ -74,7 +74,7 @@ public class SignalingClient {
             IO.setDefaultHostnameVerifier((hostname, session) -> true);
             IO.setDefaultSSLContext(sslContext);
 
-            socket = IO.socket("https://192.168.3.8:8080");
+            socket = IO.socket("https://139.224.12.1:8084");
             socket.connect();
 
             Log.e(TAG, "signaling connect fail");

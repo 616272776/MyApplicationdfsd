@@ -1,7 +1,16 @@
 package com.example.myapplicationdfsd;
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.media.AudioManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
+import android.view.View;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -23,9 +32,12 @@ import org.webrtc.SessionDescription;
 import org.webrtc.SurfaceTextureHelper;
 import org.webrtc.SurfaceViewRenderer;
 import org.webrtc.VideoCapturer;
+import org.webrtc.VideoFrame;
 import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
+import org.webrtc.audio.WebRtcAudioRecord;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,8 +51,11 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     List<PeerConnection.IceServer> iceServers;
 
     HashMap<String, PeerConnection> peerConnectionMap;
+    HashMap<String, MediaStream> mediaStreamHashMap;
     SurfaceViewRenderer[] remoteViews;
     int remoteViewsIndex = 0;
+    private int currVolume;
+    private boolean onSpeaker = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,10 +75,22 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         } else {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, 1);
         }
+
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED) {
         } else {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET}, 1);
         }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.MODIFY_AUDIO_SETTINGS) == PackageManager.PERMISSION_GRANTED) {
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.MODIFY_AUDIO_SETTINGS}, 1);
+        }
+
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+
+        //最大音量
+        int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        //当前音量
+        int currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
 
 
         peerConnectionMap = new HashMap<>();
@@ -91,6 +118,35 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         // create VideoCapturer
         VideoCapturer videoCapturer = createCameraCapturer(true);
         VideoSource videoSource = peerConnectionFactory.createVideoSource(videoCapturer.isScreencast());
+
+        videoSource.setVideoSourceCallback(new VideoSource.VideoSourceCallback() {
+            @Override
+            public void onFrameCaptured(VideoFrame videoFrame) {
+                System.out.println("视频帧");
+            }
+        });
+        WebRtcAudioRecord.setWebRtcAudioRecordCallback(new WebRtcAudioRecord.WebRtcAudioRecordCallback() {
+            @Override
+            public void onWebRtcAudioRecordInit(int audioSource, int audioFormat, int sampleRate, int channels, int bitPerSample, int bufferPerSecond, int bufferSizeInBytes) {
+
+            }
+
+            @Override
+            public void onWebRtcAudioRecordStart() {
+
+            }
+
+            @Override
+            public void onWebRtcAudioRecording(ByteBuffer buffer, int bufferSize, boolean microphoneMute) {
+                System.out.println("音频");
+            }
+
+            @Override
+            public void onWebRtcAudioRecordStop() {
+
+            }
+        });
+
         videoCapturer.initialize(surfaceTextureHelper, getApplicationContext(), videoSource.getCapturerObserver());
         videoCapturer.startCapture(480, 640, 30);
 
@@ -106,6 +162,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         MediaConstraints constraints = new MediaConstraints();
         AudioSource audioSource = peerConnectionFactory.createAudioSource(constraints);
         AudioTrack audioTrack = peerConnectionFactory.createAudioTrack("101", audioSource);
+
 
 //        // display in localView
         videoTrack.addSink(localView);
@@ -127,10 +184,48 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         mediaStream.addTrack(audioTrack);
 
         SignalingClient.get().init(this);
-
-
-
     }
+
+    //打开扬声器
+   public void OpenSpeaker() {
+
+     try{
+     AudioManager audioManager = (AudioManager) getSystemService  (Context.AUDIO_SERVICE);
+     //audioManager.setMode(AudioManager.ROUTE_SPEAKER);
+    audioManager.setMode(AudioManager.MODE_IN_CALL);
+     currVolume = audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL);
+
+     if(!audioManager.isSpeakerphoneOn()) {
+     audioManager.setSpeakerphoneOn(true);
+
+     audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL,
+                                audioManager.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL ),
+                                AudioManager.STREAM_VOICE_CALL);
+     }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+       Toast.makeText(this,"扬声器已经打开", Toast.LENGTH_SHORT).show();
+   }
+
+
+  //关闭扬声器
+          public void CloseSpeaker() {
+
+    try {
+      AudioManager audioManager = (AudioManager)getSystemService   (Context.AUDIO_SERVICE);
+      if(audioManager != null) {
+      if(audioManager.isSpeakerphoneOn()) {
+        audioManager.setSpeakerphoneOn(false);
+        audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL,currVolume,
+                                       AudioManager.STREAM_VOICE_CALL);
+      }
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    Toast.makeText(this,"扬声器已经关闭", Toast.LENGTH_SHORT).show();
+  }
 
 
     private synchronized PeerConnection getOrCreatePeerConnection(String socketId) {
@@ -146,11 +241,24 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
             }
 
             @Override
+            public void onIceConnectionChange(PeerConnection.IceConnectionState iceConnectionState) {
+                super.onIceConnectionChange(iceConnectionState);
+                if(PeerConnection.IceConnectionState.DISCONNECTED.equals(iceConnectionState)){
+                    runOnUiThread(() ->{
+                        // 清理下peerconnectMap
+                        remoteViews[0].clearImage();
+                        remoteViews[1].clearImage();
+                        remoteViews[2].clearImage();
+                    });
+                }
+            }
+
+            @Override
             public void onAddStream(MediaStream mediaStream) {
                 super.onAddStream(mediaStream);
                 VideoTrack remoteVideoTrack = mediaStream.videoTracks.get(0);
                 runOnUiThread(() -> {
-                    remoteVideoTrack.addSink(remoteViews[remoteViewsIndex++]);
+                    remoteVideoTrack.addSink(remoteViews[(remoteViewsIndex++)%3]);
                 });
             }
         });
@@ -158,6 +266,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         peerConnectionMap.put(socketId, peerConnection);
         return peerConnection;
     }
+
 
     @Override
     public void onCreateRoom() {
@@ -247,5 +356,15 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         }
 
         return null;
+    }
+
+    public void speaker(View view) {
+        if(onSpeaker){
+            CloseSpeaker();
+            onSpeaker=false;
+        }else{
+            OpenSpeaker();
+            onSpeaker=true;
+        }
     }
 }
