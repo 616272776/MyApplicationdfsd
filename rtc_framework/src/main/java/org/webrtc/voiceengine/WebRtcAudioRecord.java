@@ -62,7 +62,7 @@ public class WebRtcAudioRecord {
   private static volatile boolean microphoneMute;
   private byte[] emptyBytes;
 
-  // Audio recording error handler functions.
+    // Audio recording error handler functions.
   public enum AudioRecordStartErrorCode {
     AUDIO_RECORD_START_EXCEPTION,
     AUDIO_RECORD_START_STATE_MISMATCH,

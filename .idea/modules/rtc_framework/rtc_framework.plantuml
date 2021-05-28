@@ -1,0 +1,1269 @@
+@startuml
+
+title __MYAPPLICATIONDFSD.RTC_FRAMEWORK's Class Diagram__\n
+
+  namespace org.webrtc {
+    interface org.webrtc.AddIceObserver {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.AndroidVideoDecoder {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.AudioDecoderFactoryFactory {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.AudioEncoderFactoryFactory {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.AudioProcessingFactory {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.AudioSource {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.AudioTrack {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.BaseBitrateAdjuster {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.BitrateAdjuster {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.BuildConfig {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.BuiltinAudioDecoderFactoryFactory {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.BuiltinAudioEncoderFactoryFactory {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.CallSessionFileRotatingLogSink {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.CalledByNative {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.CalledByNativeUnchecked {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.Camera1Capturer {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.Camera1Enumerator {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.Camera1Session {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.Camera2Capturer {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.Camera2Enumerator {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.Camera2Session {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    abstract class org.webrtc.CameraCapturer {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.CameraEnumerationAndroid {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.CameraEnumerator {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.CameraSession {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.CameraVideoCapturer {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.CandidatePairChangeEvent {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.CapturerObserver {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.ContextUtils {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.CryptoOptions {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.DataChannel {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.DefaultVideoDecoderFactory {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.DefaultVideoEncoderFactory {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.DtmfSender {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.DynamicBitrateAdjuster {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.EglBase {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.EglBase10 {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.EglBase10Impl {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.EglBase14 {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.EglBase14Impl {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.EglRenderer {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.Empty {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.EncodedImage {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.FecControllerFactoryFactoryInterface {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.FileVideoCapturer {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.FrameDecryptor {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.FrameEncryptor {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.FramerateBitrateAdjuster {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.GlGenericDrawer {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.GlRectDrawer {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.GlShader {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.GlTextureFrameBuffer {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.GlUtil {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.H264Utils {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.HardwareVideoDecoderFactory {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.HardwareVideoEncoder {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.HardwareVideoEncoderFactory {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.Histogram {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.IceCandidate {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.JNILogging {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.JavaI420Buffer {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.JniCommon {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.JniHelper {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.LibvpxVp8Decoder {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.LibvpxVp8Encoder {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.LibvpxVp9Decoder {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.LibvpxVp9Encoder {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.Loggable {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.Logging {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.MediaCodecUtils {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.MediaCodecVideoDecoderFactory {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.MediaCodecWrapper {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.MediaCodecWrapperFactory {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.MediaCodecWrapperFactoryImpl {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.MediaConstraints {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.MediaSource {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.MediaStream {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.MediaStreamTrack {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.Metrics {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.NV12Buffer {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.NV21Buffer {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.NativeAndroidVideoTrackSource {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.NativeCapturerObserver {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.NativeLibrary {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.NativeLibraryLoader {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.NativePeerConnectionFactory {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.NetEqFactoryFactory {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.NetworkChangeDetector {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.NetworkChangeDetectorFactory {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.NetworkControllerFactoryFactory {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.NetworkMonitor {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.NetworkMonitorAutoDetect {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.NetworkPreference {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.NetworkStatePredictorFactoryFactory {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.PeerConnection {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.PeerConnectionDependencies {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.PeerConnectionFactory {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.PlatformSoftwareVideoDecoderFactory {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.Predicate {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.Priority {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.RTCStats {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.RTCStatsCollectorCallback {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.RTCStatsReport {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.RefCountDelegate {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.RefCounted {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.RendererCommon {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.RtcCertificatePem {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.RtpParameters {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.RtpReceiver {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.RtpSender {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.RtpTransceiver {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.SSLCertificateVerifier {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.ScreenCapturerAndroid {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.SdpObserver {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.SessionDescription {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.Size {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.SoftwareVideoDecoderFactory {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.SoftwareVideoEncoderFactory {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.StatsObserver {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.StatsReport {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.SurfaceEglRenderer {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.SurfaceTextureHelper {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.SurfaceViewRenderer {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.TextureBufferImpl {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.ThreadUtils {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.TimestampAligner {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.TurnCustomizer {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.VideoCapturer {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.VideoCodecInfo {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    enum VideoCodecMimeType {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    enum VideoCodecStatus {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.VideoCodecType {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.VideoDecoder {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.VideoDecoderFactory {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.VideoDecoderFallback {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.VideoDecoderWrapper {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.VideoEncoder {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.VideoEncoderFactory {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.VideoEncoderFallback {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.VideoEncoderWrapper {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.VideoFileRenderer {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.VideoFrame {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.VideoFrameDrawer {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.VideoProcessor {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    interface org.webrtc.VideoSink {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.VideoSource {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.VideoTrack {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.WebRtcClassLoader {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.WrappedNativeI420Buffer {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    abstract class org.webrtc.WrappedNativeVideoDecoder {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    abstract class org.webrtc.WrappedNativeVideoEncoder {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.YuvConverter {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    class org.webrtc.YuvHelper {
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace audio {
+      interface org.webrtc.audio.AudioDeviceModule {
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace audio {
+      class org.webrtc.audio.JavaAudioDeviceModule {
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace audio {
+      class org.webrtc.audio.LegacyAudioDeviceModule {
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace audio {
+      class org.webrtc.audio.LowLatencyAudioBufferManager {
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace audio {
+      class org.webrtc.audio.VolumeLogger {
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace audio {
+      class org.webrtc.audio.WebRtcAudioEffects {
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace audio {
+      class org.webrtc.audio.WebRtcAudioManager {
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace audio {
+      class org.webrtc.audio.WebRtcAudioRecord {
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace audio {
+      class org.webrtc.audio.WebRtcAudioTrack {
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace audio {
+      class org.webrtc.audio.WebRtcAudioUtils {
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace voiceengine {
+      class org.webrtc.voiceengine.BuildInfo {
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace voiceengine {
+      class org.webrtc.voiceengine.WebRtcAudioEffects {
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace voiceengine {
+      class org.webrtc.voiceengine.WebRtcAudioManager {
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace voiceengine {
+      class org.webrtc.voiceengine.WebRtcAudioRecord {
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace voiceengine {
+      class org.webrtc.voiceengine.WebRtcAudioTrack {
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace voiceengine {
+      class org.webrtc.voiceengine.WebRtcAudioUtils {
+      }
+    }
+  }
+  
+
+  org.webrtc.AndroidVideoDecoder .up.|> org.webrtc.VideoDecoder
+  org.webrtc.AndroidVideoDecoder .up.|> org.webrtc.VideoSink
+  org.webrtc.AndroidVideoDecoder o-- org.webrtc.VideoDecoder.Callback : callback
+  org.webrtc.AndroidVideoDecoder o-- org.webrtc.MediaCodecWrapper : codec
+  org.webrtc.AndroidVideoDecoder o-- org.webrtc.VideoCodecMimeType : codecType
+  org.webrtc.AndroidVideoDecoder o-- org.webrtc.ThreadUtils.ThreadChecker : decoderThreadChecker
+  org.webrtc.AndroidVideoDecoder o-- org.webrtc.MediaCodecWrapperFactory : mediaCodecWrapperFactory
+  org.webrtc.AndroidVideoDecoder o-- org.webrtc.ThreadUtils.ThreadChecker : outputThreadChecker
+  org.webrtc.AndroidVideoDecoder o-- org.webrtc.AndroidVideoDecoder.DecodedTextureMetadata : renderedTextureMetadata
+  org.webrtc.AndroidVideoDecoder o-- org.webrtc.EglBase.Context : sharedContext
+  org.webrtc.AndroidVideoDecoder o-- org.webrtc.SurfaceTextureHelper : surfaceTextureHelper
+  org.webrtc.AudioSource -up-|> org.webrtc.MediaSource
+  org.webrtc.AudioTrack -up-|> org.webrtc.MediaStreamTrack
+  org.webrtc.BaseBitrateAdjuster .up.|> org.webrtc.BitrateAdjuster
+  org.webrtc.BuiltinAudioDecoderFactoryFactory .up.|> org.webrtc.AudioDecoderFactoryFactory
+  org.webrtc.BuiltinAudioEncoderFactoryFactory .up.|> org.webrtc.AudioEncoderFactoryFactory
+  org.webrtc.Camera1Capturer -up-|> org.webrtc.CameraCapturer
+  org.webrtc.Camera1Enumerator .up.|> org.webrtc.CameraEnumerator
+  org.webrtc.Camera1Session .up.|> org.webrtc.CameraSession
+  org.webrtc.Camera1Session o-- org.webrtc.CameraEnumerationAndroid.CaptureFormat : captureFormat
+  org.webrtc.Camera1Session o-- org.webrtc.CameraSession.Events : events
+  org.webrtc.Camera1Session o-- org.webrtc.Camera1Session.SessionState : state
+  org.webrtc.Camera1Session o-- org.webrtc.SurfaceTextureHelper : surfaceTextureHelper
+  org.webrtc.Camera2Capturer -up-|> org.webrtc.CameraCapturer
+  org.webrtc.Camera2Enumerator .up.|> org.webrtc.CameraEnumerator
+  org.webrtc.Camera2Session .up.|> org.webrtc.CameraSession
+  org.webrtc.Camera2Session o-- org.webrtc.CameraSession.CreateSessionCallback : callback
+  org.webrtc.Camera2Session o-- org.webrtc.CameraEnumerationAndroid.CaptureFormat : captureFormat
+  org.webrtc.Camera2Session o-- org.webrtc.CameraSession.Events : events
+  org.webrtc.Camera2Session o-- org.webrtc.Camera2Session.SessionState : state
+  org.webrtc.Camera2Session o-- org.webrtc.SurfaceTextureHelper : surfaceTextureHelper
+  org.webrtc.CameraCapturer .up.|> org.webrtc.CameraVideoCapturer
+  org.webrtc.CameraCapturer o-- org.webrtc.CameraEnumerator : cameraEnumerator
+  org.webrtc.CameraCapturer o-- org.webrtc.CameraSession.Events : cameraSessionEventsHandler
+  org.webrtc.CameraCapturer o-- org.webrtc.CameraVideoCapturer.CameraStatistics : cameraStatistics
+  org.webrtc.CameraCapturer o-- org.webrtc.CapturerObserver : capturerObserver
+  org.webrtc.CameraCapturer o-- org.webrtc.CameraSession.CreateSessionCallback : createSessionCallback
+  org.webrtc.CameraCapturer o-- org.webrtc.CameraSession : currentSession
+  org.webrtc.CameraCapturer o-- org.webrtc.CameraVideoCapturer.CameraEventsHandler : eventsHandler
+  org.webrtc.CameraCapturer o-- org.webrtc.SurfaceTextureHelper : surfaceHelper
+  org.webrtc.CameraCapturer o-- org.webrtc.CameraVideoCapturer.CameraSwitchHandler : switchEventsHandler
+  org.webrtc.CameraCapturer o-- org.webrtc.CameraCapturer.SwitchState : switchState
+  org.webrtc.CandidatePairChangeEvent o-- org.webrtc.IceCandidate : local
+  org.webrtc.CandidatePairChangeEvent o-- org.webrtc.IceCandidate : remote
+  org.webrtc.CryptoOptions o-- org.webrtc.CryptoOptions.SFrame : sframe
+  org.webrtc.CryptoOptions o-- org.webrtc.CryptoOptions.Srtp : srtp
+  org.webrtc.DefaultVideoDecoderFactory .up.|> org.webrtc.VideoDecoderFactory
+  org.webrtc.DefaultVideoDecoderFactory o-- org.webrtc.VideoDecoderFactory : hardwareVideoDecoderFactory
+  org.webrtc.DefaultVideoDecoderFactory o-- org.webrtc.VideoDecoderFactory : platformSoftwareVideoDecoderFactory
+  org.webrtc.DefaultVideoDecoderFactory o-- org.webrtc.VideoDecoderFactory : softwareVideoDecoderFactory
+  org.webrtc.DefaultVideoEncoderFactory .up.|> org.webrtc.VideoEncoderFactory
+  org.webrtc.DefaultVideoEncoderFactory o-- org.webrtc.VideoEncoderFactory : hardwareVideoEncoderFactory
+  org.webrtc.DefaultVideoEncoderFactory o-- org.webrtc.VideoEncoderFactory : softwareVideoEncoderFactory
+  org.webrtc.DynamicBitrateAdjuster -up-|> org.webrtc.BaseBitrateAdjuster
+  org.webrtc.EglBase10Impl .up.|> org.webrtc.EglBase10
+  org.webrtc.EglBase14Impl .up.|> org.webrtc.EglBase14
+  org.webrtc.EglRenderer .up.|> org.webrtc.VideoSink
+  org.webrtc.EglRenderer o-- org.webrtc.GlTextureFrameBuffer : bitmapTextureFramebuffer
+  org.webrtc.EglRenderer o-- org.webrtc.RendererCommon.GlDrawer : drawer
+  org.webrtc.EglRenderer o-- org.webrtc.EglBase : eglBase
+  org.webrtc.EglRenderer o-- org.webrtc.EglRenderer.EglSurfaceCreation : eglSurfaceCreationRunnable
+  org.webrtc.EglRenderer o-- org.webrtc.EglRenderer.ErrorCallback : errorCallback
+  org.webrtc.EglRenderer o-- org.webrtc.VideoFrameDrawer : frameDrawer
+  org.webrtc.EglRenderer o-- org.webrtc.VideoFrame : pendingFrame
+  org.webrtc.EncodedImage .up.|> org.webrtc.RefCounted
+  org.webrtc.EncodedImage o-- org.webrtc.EncodedImage.FrameType : frameType
+  org.webrtc.EncodedImage o-- org.webrtc.RefCountDelegate : refCountDelegate
+  org.webrtc.FileVideoCapturer .up.|> org.webrtc.VideoCapturer
+  org.webrtc.FileVideoCapturer o-- org.webrtc.CapturerObserver : capturerObserver
+  org.webrtc.FileVideoCapturer o-- org.webrtc.FileVideoCapturer.VideoReader : videoReader
+  org.webrtc.FramerateBitrateAdjuster -up-|> org.webrtc.BaseBitrateAdjuster
+  org.webrtc.GlGenericDrawer .up.|> org.webrtc.RendererCommon.GlDrawer
+  org.webrtc.GlGenericDrawer o-- org.webrtc.GlShader : currentShader
+  org.webrtc.GlGenericDrawer o-- org.webrtc.GlGenericDrawer.ShaderType : currentShaderType
+  org.webrtc.GlGenericDrawer o-- org.webrtc.GlGenericDrawer.ShaderCallbacks : shaderCallbacks
+  org.webrtc.GlRectDrawer -up-|> org.webrtc.GlGenericDrawer
+  org.webrtc.HardwareVideoDecoderFactory -up-|> org.webrtc.MediaCodecVideoDecoderFactory
+  org.webrtc.HardwareVideoEncoder .up.|> org.webrtc.VideoEncoder
+  org.webrtc.HardwareVideoEncoder o-- org.webrtc.BitrateAdjuster : bitrateAdjuster
+  org.webrtc.HardwareVideoEncoder o-- org.webrtc.VideoEncoder.Callback : callback
+  org.webrtc.HardwareVideoEncoder o-- org.webrtc.MediaCodecWrapper : codec
+  org.webrtc.HardwareVideoEncoder o-- org.webrtc.VideoCodecMimeType : codecType
+  org.webrtc.HardwareVideoEncoder o-- org.webrtc.ThreadUtils.ThreadChecker : encodeThreadChecker
+  org.webrtc.HardwareVideoEncoder o-- org.webrtc.MediaCodecWrapperFactory : mediaCodecWrapperFactory
+  org.webrtc.HardwareVideoEncoder o-- org.webrtc.HardwareVideoEncoder.BusyCount : outputBuffersBusyCount
+  org.webrtc.HardwareVideoEncoder o-- org.webrtc.ThreadUtils.ThreadChecker : outputThreadChecker
+  org.webrtc.HardwareVideoEncoder o-- org.webrtc.EglBase14.Context : sharedContext
+  org.webrtc.HardwareVideoEncoder o-- org.webrtc.GlRectDrawer : textureDrawer
+  org.webrtc.HardwareVideoEncoder o-- org.webrtc.EglBase14 : textureEglBase
+  org.webrtc.HardwareVideoEncoder o-- org.webrtc.VideoFrameDrawer : videoFrameDrawer
+  org.webrtc.HardwareVideoEncoder o-- org.webrtc.HardwareVideoEncoder.YuvFormat : yuvFormat
+  org.webrtc.HardwareVideoEncoderFactory .up.|> org.webrtc.VideoEncoderFactory
+  org.webrtc.HardwareVideoEncoderFactory o-- org.webrtc.EglBase14.Context : sharedContext
+  org.webrtc.IceCandidate o-- org.webrtc.PeerConnection.AdapterType : adapterType
+  org.webrtc.JNILogging o-- org.webrtc.Loggable : loggable
+  org.webrtc.JavaI420Buffer .up.|> org.webrtc.VideoFrame.I420Buffer
+  org.webrtc.JavaI420Buffer o-- org.webrtc.RefCountDelegate : refCountDelegate
+  org.webrtc.LibvpxVp8Decoder -up-|> org.webrtc.WrappedNativeVideoDecoder
+  org.webrtc.LibvpxVp8Encoder -up-|> org.webrtc.WrappedNativeVideoEncoder
+  org.webrtc.LibvpxVp9Decoder -up-|> org.webrtc.WrappedNativeVideoDecoder
+  org.webrtc.LibvpxVp9Encoder -up-|> org.webrtc.WrappedNativeVideoEncoder
+  org.webrtc.MediaCodecVideoDecoderFactory .up.|> org.webrtc.VideoDecoderFactory
+  org.webrtc.MediaCodecVideoDecoderFactory o-- org.webrtc.EglBase.Context : sharedContext
+  org.webrtc.MediaCodecWrapperFactoryImpl .up.|> org.webrtc.MediaCodecWrapperFactory
+  org.webrtc.MediaSource o-- org.webrtc.RefCountDelegate : refCountDelegate
+  org.webrtc.NV12Buffer .up.|> org.webrtc.VideoFrame.Buffer
+  org.webrtc.NV12Buffer o-- org.webrtc.RefCountDelegate : refCountDelegate
+  org.webrtc.NV21Buffer .up.|> org.webrtc.VideoFrame.Buffer
+  org.webrtc.NV21Buffer o-- org.webrtc.RefCountDelegate : refCountDelegate
+  org.webrtc.NativeCapturerObserver .up.|> org.webrtc.CapturerObserver
+  org.webrtc.NativeCapturerObserver o-- org.webrtc.NativeAndroidVideoTrackSource : nativeAndroidVideoTrackSource
+  org.webrtc.NetworkMonitor o-- org.webrtc.NetworkChangeDetector.ConnectionType : currentConnectionType
+  org.webrtc.NetworkMonitor o-- org.webrtc.NetworkChangeDetector : networkChangeDetector
+  org.webrtc.NetworkMonitor o-- org.webrtc.NetworkChangeDetectorFactory : networkChangeDetectorFactory
+  org.webrtc.NetworkMonitorAutoDetect .up.|> org.webrtc.NetworkChangeDetector
+  org.webrtc.NetworkMonitorAutoDetect -up-|> android.content.BroadcastReceiver
+  org.webrtc.NetworkMonitorAutoDetect o-- org.webrtc.NetworkChangeDetector.ConnectionType : connectionType
+  org.webrtc.NetworkMonitorAutoDetect o-- org.webrtc.NetworkMonitorAutoDetect.ConnectivityManagerDelegate : connectivityManagerDelegate
+  org.webrtc.NetworkMonitorAutoDetect o-- org.webrtc.NetworkChangeDetector.Observer : observer
+  org.webrtc.NetworkMonitorAutoDetect o-- org.webrtc.NetworkMonitorAutoDetect.WifiDirectManagerDelegate : wifiDirectManagerDelegate
+  org.webrtc.NetworkMonitorAutoDetect o-- org.webrtc.NetworkMonitorAutoDetect.WifiManagerDelegate : wifiManagerDelegate
+  org.webrtc.PeerConnectionDependencies o-- org.webrtc.PeerConnection.Observer : observer
+  org.webrtc.PeerConnectionDependencies o-- org.webrtc.SSLCertificateVerifier : sslCertificateVerifier
+  org.webrtc.PeerConnectionFactory o-- org.webrtc.PeerConnectionFactory.ThreadInfo : networkThread
+  org.webrtc.PeerConnectionFactory o-- org.webrtc.PeerConnectionFactory.ThreadInfo : signalingThread
+  org.webrtc.PeerConnectionFactory o-- org.webrtc.PeerConnectionFactory.ThreadInfo : workerThread
+  org.webrtc.PlatformSoftwareVideoDecoderFactory -up-|> org.webrtc.MediaCodecVideoDecoderFactory
+  org.webrtc.RefCountDelegate .up.|> org.webrtc.RefCounted
+  org.webrtc.RtpParameters o-- org.webrtc.RtpParameters.DegradationPreference : degradationPreference
+  org.webrtc.RtpParameters o-- org.webrtc.RtpParameters.Rtcp : rtcp
+  org.webrtc.RtpReceiver o-- org.webrtc.MediaStreamTrack : cachedTrack
+  org.webrtc.RtpSender o-- org.webrtc.MediaStreamTrack : cachedTrack
+  org.webrtc.RtpSender o-- org.webrtc.DtmfSender : dtmfSender
+  org.webrtc.RtpTransceiver o-- org.webrtc.RtpReceiver : cachedReceiver
+  org.webrtc.RtpTransceiver o-- org.webrtc.RtpSender : cachedSender
+  org.webrtc.ScreenCapturerAndroid .up.|> org.webrtc.VideoCapturer
+  org.webrtc.ScreenCapturerAndroid .up.|> org.webrtc.VideoSink
+  org.webrtc.ScreenCapturerAndroid o-- org.webrtc.CapturerObserver : capturerObserver
+  org.webrtc.ScreenCapturerAndroid o-- org.webrtc.SurfaceTextureHelper : surfaceTextureHelper
+  org.webrtc.SessionDescription o-- org.webrtc.SessionDescription.Type : type
+  org.webrtc.SoftwareVideoDecoderFactory .up.|> org.webrtc.VideoDecoderFactory
+  org.webrtc.SoftwareVideoEncoderFactory .up.|> org.webrtc.VideoEncoderFactory
+  org.webrtc.SurfaceEglRenderer .up.|> android.view.SurfaceHolder.Callback
+  org.webrtc.SurfaceEglRenderer -up-|> org.webrtc.EglRenderer
+  org.webrtc.SurfaceEglRenderer o-- org.webrtc.RendererCommon.RendererEvents : rendererEvents
+  org.webrtc.SurfaceTextureHelper o-- org.webrtc.EglBase : eglBase
+  org.webrtc.SurfaceTextureHelper o-- org.webrtc.SurfaceTextureHelper.FrameRefMonitor : frameRefMonitor
+  org.webrtc.SurfaceTextureHelper o-- org.webrtc.VideoSink : listener
+  org.webrtc.SurfaceTextureHelper o-- org.webrtc.VideoSink : pendingListener
+  org.webrtc.SurfaceTextureHelper o-- org.webrtc.TextureBufferImpl.RefCountMonitor : textureRefCountMonitor
+  org.webrtc.SurfaceTextureHelper o-- org.webrtc.TimestampAligner : timestampAligner
+  org.webrtc.SurfaceTextureHelper o-- org.webrtc.YuvConverter : yuvConverter
+  org.webrtc.SurfaceViewRenderer .up.|> android.view.SurfaceHolder.Callback
+  org.webrtc.SurfaceViewRenderer .up.|> org.webrtc.RendererCommon.RendererEvents
+  org.webrtc.SurfaceViewRenderer .up.|> org.webrtc.VideoSink
+  org.webrtc.SurfaceViewRenderer -up-|> android.view.SurfaceView
+  org.webrtc.SurfaceViewRenderer o-- org.webrtc.SurfaceEglRenderer : eglRenderer
+  org.webrtc.SurfaceViewRenderer o-- org.webrtc.RendererCommon.RendererEvents : rendererEvents
+  org.webrtc.SurfaceViewRenderer o-- org.webrtc.RendererCommon.VideoLayoutMeasure : videoLayoutMeasure
+  org.webrtc.TextureBufferImpl .up.|> org.webrtc.VideoFrame.TextureBuffer
+  org.webrtc.TextureBufferImpl o-- org.webrtc.RefCountDelegate : refCountDelegate
+  org.webrtc.TextureBufferImpl o-- org.webrtc.TextureBufferImpl.RefCountMonitor : refCountMonitor
+  org.webrtc.TextureBufferImpl o-- org.webrtc.VideoFrame.TextureBuffer.Type : type
+  org.webrtc.TextureBufferImpl o-- org.webrtc.YuvConverter : yuvConverter
+  org.webrtc.VideoDecoderFallback -up-|> org.webrtc.WrappedNativeVideoDecoder
+  org.webrtc.VideoDecoderFallback o-- org.webrtc.VideoDecoder : fallback
+  org.webrtc.VideoDecoderFallback o-- org.webrtc.VideoDecoder : primary
+  org.webrtc.VideoEncoderFallback -up-|> org.webrtc.WrappedNativeVideoEncoder
+  org.webrtc.VideoEncoderFallback o-- org.webrtc.VideoEncoder : fallback
+  org.webrtc.VideoEncoderFallback o-- org.webrtc.VideoEncoder : primary
+  org.webrtc.VideoFileRenderer .up.|> org.webrtc.VideoSink
+  org.webrtc.VideoFileRenderer o-- org.webrtc.EglBase : eglBase
+  org.webrtc.VideoFileRenderer o-- org.webrtc.YuvConverter : yuvConverter
+  org.webrtc.VideoFrame .up.|> org.webrtc.RefCounted
+  org.webrtc.VideoFrame o-- org.webrtc.VideoFrame.Buffer : buffer
+  org.webrtc.VideoFrameDrawer o-- org.webrtc.VideoFrame : lastI420Frame
+  org.webrtc.VideoFrameDrawer o-- org.webrtc.VideoFrameDrawer.YuvUploader : yuvUploader
+  org.webrtc.VideoSource -up-|> org.webrtc.MediaSource
+  org.webrtc.VideoSource o-- org.webrtc.CapturerObserver : capturerObserver
+  org.webrtc.VideoSource o-- org.webrtc.NativeAndroidVideoTrackSource : nativeAndroidVideoTrackSource
+  org.webrtc.VideoSource o-- org.webrtc.VideoProcessor : videoProcessor
+  org.webrtc.VideoTrack -up-|> org.webrtc.MediaStreamTrack
+  org.webrtc.WrappedNativeI420Buffer .up.|> org.webrtc.VideoFrame.I420Buffer
+  org.webrtc.WrappedNativeVideoDecoder .up.|> org.webrtc.VideoDecoder
+  org.webrtc.WrappedNativeVideoEncoder .up.|> org.webrtc.VideoEncoder
+  org.webrtc.YuvConverter o-- org.webrtc.GlGenericDrawer : drawer
+  org.webrtc.YuvConverter o-- org.webrtc.GlTextureFrameBuffer : i420TextureFrameBuffer
+  org.webrtc.YuvConverter o-- org.webrtc.YuvConverter.ShaderCallbacks : shaderCallbacks
+  org.webrtc.YuvConverter o-- org.webrtc.ThreadUtils.ThreadChecker : threadChecker
+  org.webrtc.YuvConverter o-- org.webrtc.VideoFrameDrawer : videoFrameDrawer
+  org.webrtc.audio.JavaAudioDeviceModule .up.|> org.webrtc.audio.AudioDeviceModule
+  org.webrtc.audio.JavaAudioDeviceModule o-- org.webrtc.audio.WebRtcAudioRecord : audioInput
+  org.webrtc.audio.JavaAudioDeviceModule o-- org.webrtc.audio.WebRtcAudioTrack : audioOutput
+  org.webrtc.audio.LegacyAudioDeviceModule .up.|> org.webrtc.audio.AudioDeviceModule
+  org.webrtc.audio.WebRtcAudioRecord o-- org.webrtc.audio.JavaAudioDeviceModule.SamplesReadyCallback : audioSamplesReadyCallback
+  org.webrtc.audio.WebRtcAudioRecord o-- org.webrtc.audio.WebRtcAudioRecord.AudioRecordThread : audioThread
+  org.webrtc.audio.WebRtcAudioRecord o-- org.webrtc.audio.WebRtcAudioEffects : effects
+  org.webrtc.audio.WebRtcAudioRecord o-- org.webrtc.audio.JavaAudioDeviceModule.AudioRecordErrorCallback : errorCallback
+  org.webrtc.audio.WebRtcAudioRecord o-- org.webrtc.audio.JavaAudioDeviceModule.AudioRecordStateCallback : stateCallback
+  org.webrtc.audio.WebRtcAudioTrack o-- org.webrtc.audio.WebRtcAudioTrack.AudioTrackThread : audioThread
+  org.webrtc.audio.WebRtcAudioTrack o-- org.webrtc.audio.JavaAudioDeviceModule.AudioTrackErrorCallback : errorCallback
+  org.webrtc.audio.WebRtcAudioTrack o-- org.webrtc.audio.JavaAudioDeviceModule.AudioTrackStateCallback : stateCallback
+  org.webrtc.audio.WebRtcAudioTrack o-- org.webrtc.ThreadUtils.ThreadChecker : threadChecker
+  org.webrtc.audio.WebRtcAudioTrack o-- org.webrtc.audio.VolumeLogger : volumeLogger
+  org.webrtc.voiceengine.WebRtcAudioManager o-- org.webrtc.voiceengine.WebRtcAudioManager.VolumeLogger : volumeLogger
+  org.webrtc.voiceengine.WebRtcAudioRecord o-- org.webrtc.voiceengine.WebRtcAudioRecord.AudioRecordThread : audioThread
+  org.webrtc.voiceengine.WebRtcAudioRecord o-- org.webrtc.voiceengine.WebRtcAudioEffects : effects
+  org.webrtc.voiceengine.WebRtcAudioTrack o-- org.webrtc.voiceengine.WebRtcAudioTrack.AudioTrackThread : audioThread
+  org.webrtc.voiceengine.WebRtcAudioTrack o-- org.webrtc.ThreadUtils.ThreadChecker : threadChecker
+
+
+right footer
+
+
+PlantUML diagram generated by SketchIt! (https://bitbucket.org/pmesmeur/sketch.it)
+For more information about this tool, please contact philippe.mesmeur@gmail.com
+endfooter
+
+@enduml

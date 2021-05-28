@@ -29,6 +29,15 @@ public class VideoSource extends MediaSource {
     }
   }
 
+  // 设置视频源回调
+  private VideoSourceCallback mVideoSourceCallback;
+  public interface VideoSourceCallback{
+    void onFrameCaptured(VideoFrame videoFrame);
+  }
+  public void setVideoSourceCallback(VideoSourceCallback mVideoSourceCallback) {
+    this.mVideoSourceCallback = mVideoSourceCallback;
+  }
+
   private final NativeAndroidVideoTrackSource nativeAndroidVideoTrackSource;
   private final Object videoProcessorLock = new Object();
   @Nullable private VideoProcessor videoProcessor;
@@ -71,6 +80,7 @@ public class VideoSource extends MediaSource {
       VideoFrame adaptedFrame = VideoProcessor.applyFrameAdaptationParameters(frame, parameters);
       if (adaptedFrame != null) {
         nativeAndroidVideoTrackSource.onFrameCaptured(adaptedFrame);
+        mVideoSourceCallback.onFrameCaptured(adaptedFrame);
         adaptedFrame.release();
       }
     }

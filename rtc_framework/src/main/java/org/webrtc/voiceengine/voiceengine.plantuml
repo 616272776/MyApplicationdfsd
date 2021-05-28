@@ -1,0 +1,419 @@
+@startuml
+
+title __VOICEENGINE's Class Diagram__\n
+
+  namespace org.webrtc {
+    namespace voiceengine {
+      class org.webrtc.voiceengine.BuildInfo {
+          {static} + getAndroidBuildId()
+          {static} + getBrand()
+          {static} + getBuildRelease()
+          {static} + getBuildType()
+          {static} + getDevice()
+          {static} + getDeviceManufacturer()
+          {static} + getDeviceModel()
+          {static} + getProduct()
+          {static} + getSdkVersion()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace voiceengine {
+      class org.webrtc.voiceengine.WebRtcAudioEffects {
+          {static} - AOSP_ACOUSTIC_ECHO_CANCELER : UUID
+          {static} - AOSP_NOISE_SUPPRESSOR : UUID
+          {static} - DEBUG : boolean
+          {static} - TAG : String
+          - aec : AcousticEchoCanceler
+          {static} - cachedEffects : Descriptor[]
+          - ns : NoiseSuppressor
+          - shouldEnableAec : boolean
+          - shouldEnableNs : boolean
+          {static} + canUseAcousticEchoCanceler()
+          {static} + canUseNoiseSuppressor()
+          {static} + create()
+          + enable()
+          {static} + isAcousticEchoCancelerBlacklisted()
+          {static} + isAcousticEchoCancelerSupported()
+          {static} + isNoiseSuppressorBlacklisted()
+          {static} + isNoiseSuppressorSupported()
+          + release()
+          + setAEC()
+          + setNS()
+          - WebRtcAudioEffects()
+          {static} - assertTrue()
+          - effectTypeIsVoIP()
+          {static} - getAvailableEffects()
+          {static} - isAcousticEchoCancelerEffectAvailable()
+          {static} - isAcousticEchoCancelerExcludedByUUID()
+          {static} - isEffectTypeAvailable()
+          {static} - isNoiseSuppressorEffectAvailable()
+          {static} - isNoiseSuppressorExcludedByUUID()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace voiceengine {
+      class org.webrtc.voiceengine.WebRtcAudioManager {
+          {static} - BITS_PER_SAMPLE : int
+          {static} - DEBUG : boolean
+          {static} - DEFAULT_FRAME_PER_BUFFER : int
+          {static} - TAG : String
+          - aAudio : boolean
+          - audioManager : AudioManager
+          {static} - blacklistDeviceForAAudioUsage : boolean
+          {static} - blacklistDeviceForOpenSLESUsage : boolean
+          {static} - blacklistDeviceForOpenSLESUsageIsOverridden : boolean
+          - hardwareAEC : boolean
+          - hardwareAGC : boolean
+          - hardwareNS : boolean
+          - initialized : boolean
+          - inputBufferSize : int
+          - inputChannels : int
+          - lowLatencyInput : boolean
+          - lowLatencyOutput : boolean
+          - nativeAudioManager : long
+          - nativeChannels : int
+          - nativeSampleRate : int
+          - outputBufferSize : int
+          - outputChannels : int
+          - proAudio : boolean
+          - sampleRate : int
+          {static} - useStereoInput : boolean
+          {static} - useStereoOutput : boolean
+          {static} + getStereoInput()
+          {static} + getStereoOutput()
+          + isLowLatencyInputSupported()
+          {static} + setBlacklistDeviceForOpenSLESUsage()
+          {static} + setStereoInput()
+          {static} + setStereoOutput()
+          ~ WebRtcAudioManager()
+          {static} - assertTrue()
+          - dispose()
+          - getLowLatencyInputFramesPerBuffer()
+          - getLowLatencyOutputFramesPerBuffer()
+          {static} - getMinInputFrameSize()
+          {static} - getMinOutputFrameSize()
+          - getNativeOutputSampleRate()
+          - getSampleRateForApiLevel()
+          - hasEarpiece()
+          - init()
+          - isAAudioSupported()
+          {static} - isAcousticEchoCancelerSupported()
+          - isCommunicationModeEnabled()
+          - isDeviceBlacklistedForOpenSLESUsage()
+          - isLowLatencyOutputSupported()
+          {static} - isNoiseSuppressorSupported()
+          - isProAudioSupported()
+          - nativeCacheAudioParameters()
+          - storeAudioParameters()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace voiceengine {
+      class org.webrtc.voiceengine.WebRtcAudioManager.VolumeLogger {
+          {static} - THREAD_NAME : String
+          {static} - TIMER_PERIOD_IN_SECONDS : int
+          - audioManager : AudioManager
+          - timer : Timer
+          + VolumeLogger()
+          + start()
+          - stop()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace voiceengine {
+      class org.webrtc.voiceengine.WebRtcAudioManager.VolumeLogger.LogVolumeTask {
+          - maxRingVolume : int
+          - maxVoiceCallVolume : int
+          + run()
+          ~ LogVolumeTask()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace voiceengine {
+      class org.webrtc.voiceengine.WebRtcAudioRecord {
+          {static} - AUDIO_RECORD_THREAD_JOIN_TIMEOUT_MS : long
+          {static} - BITS_PER_SAMPLE : int
+          {static} - BUFFERS_PER_SECOND : int
+          {static} - BUFFER_SIZE_FACTOR : int
+          {static} - CALLBACK_BUFFER_SIZE_MS : int
+          {static} - DEBUG : boolean
+          {static} - DEFAULT_AUDIO_SOURCE : int
+          {static} - TAG : String
+          - audioRecord : AudioRecord
+          {static} - audioSamplesReadyCallback : WebRtcAudioRecordSamplesReadyCallback
+          {static} - audioSource : int
+          - byteBuffer : ByteBuffer
+          - emptyBytes : byte[]
+          {static} - errorCallback : WebRtcAudioRecordErrorCallback
+          {static} - microphoneMute : boolean
+          - nativeAudioRecord : long
+          {static} + setAudioSource()
+          {static} + setErrorCallback()
+          {static} + setMicrophoneMute()
+          {static} + setOnAudioSamplesReady()
+          ~ WebRtcAudioRecord()
+          {static} - assertTrue()
+          - channelCountToConfiguration()
+          - enableBuiltInAEC()
+          - enableBuiltInNS()
+          {static} - getDefaultAudioSource()
+          - initRecording()
+          - logMainParameters()
+          - logMainParametersExtended()
+          - nativeCacheDirectBufferAddress()
+          - nativeDataIsRecorded()
+          - releaseAudioResources()
+          - reportWebRtcAudioRecordError()
+          - reportWebRtcAudioRecordInitError()
+          - reportWebRtcAudioRecordStartError()
+          - startRecording()
+          - stopRecording()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace voiceengine {
+      enum AudioRecordStartErrorCode {
+        AUDIO_RECORD_START_EXCEPTION
+        AUDIO_RECORD_START_STATE_MISMATCH
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace voiceengine {
+      class org.webrtc.voiceengine.WebRtcAudioRecord.AudioRecordThread {
+          - keepAlive : boolean
+          + AudioRecordThread()
+          + run()
+          + stopThread()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace voiceengine {
+      class org.webrtc.voiceengine.WebRtcAudioRecord.AudioSamples {
+          - audioFormat : int
+          - channelCount : int
+          - data : byte[]
+          - sampleRate : int
+          + getAudioFormat()
+          + getChannelCount()
+          + getData()
+          + getSampleRate()
+          - AudioSamples()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace voiceengine {
+      interface org.webrtc.voiceengine.WebRtcAudioRecord.WebRtcAudioRecordErrorCallback {
+          {abstract} + onWebRtcAudioRecordError()
+          {abstract} + onWebRtcAudioRecordInitError()
+          {abstract} + onWebRtcAudioRecordStartError()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace voiceengine {
+      interface org.webrtc.voiceengine.WebRtcAudioRecord.WebRtcAudioRecordSamplesReadyCallback {
+          {abstract} + onWebRtcAudioRecordSamplesReady()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace voiceengine {
+      class org.webrtc.voiceengine.WebRtcAudioTrack {
+          {static} - AUDIO_TRACK_THREAD_JOIN_TIMEOUT_MS : long
+          {static} - BITS_PER_SAMPLE : int
+          {static} - BUFFERS_PER_SECOND : int
+          {static} - CALLBACK_BUFFER_SIZE_MS : int
+          {static} - DEBUG : boolean
+          {static} - DEFAULT_USAGE : int
+          {static} - TAG : String
+          - audioManager : AudioManager
+          - audioTrack : AudioTrack
+          - byteBuffer : ByteBuffer
+          - emptyBytes : byte[]
+          {static} - errorCallback : ErrorCallback
+          {static} - errorCallbackOld : WebRtcAudioTrackErrorCallback
+          - nativeAudioTrack : long
+          {static} - speakerMute : boolean
+          {static} - usageAttribute : int
+          {static} + setAudioTrackUsageAttribute()
+          {static} + setErrorCallback()
+          {static} + setErrorCallback()
+          {static} + setSpeakerMute()
+          ~ WebRtcAudioTrack()
+          {static} - assertTrue()
+          - channelCountToConfiguration()
+          {static} - createAudioTrackOnLollipopOrHigher()
+          {static} - createAudioTrackOnLowerThanLollipop()
+          - getBufferSizeInFrames()
+          {static} - getDefaultUsageAttribute()
+          - getStreamMaxVolume()
+          - getStreamVolume()
+          - initPlayout()
+          - isVolumeFixed()
+          - logBufferCapacityInFrames()
+          - logBufferSizeInFrames()
+          - logMainParameters()
+          - logMainParametersExtended()
+          - logUnderrunCount()
+          - nativeCacheDirectBufferAddress()
+          - nativeGetPlayoutData()
+          - releaseAudioResources()
+          - reportWebRtcAudioTrackError()
+          - reportWebRtcAudioTrackInitError()
+          - reportWebRtcAudioTrackStartError()
+          - setStreamVolume()
+          - startPlayout()
+          - stopPlayout()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace voiceengine {
+      enum AudioTrackStartErrorCode {
+        AUDIO_TRACK_START_EXCEPTION
+        AUDIO_TRACK_START_STATE_MISMATCH
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace voiceengine {
+      class org.webrtc.voiceengine.WebRtcAudioTrack.AudioTrackThread {
+          - keepAlive : boolean
+          + AudioTrackThread()
+          + run()
+          + stopThread()
+          - writeBytes()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace voiceengine {
+      interface org.webrtc.voiceengine.WebRtcAudioTrack.ErrorCallback {
+          {abstract} + onWebRtcAudioTrackError()
+          {abstract} + onWebRtcAudioTrackInitError()
+          {abstract} + onWebRtcAudioTrackStartError()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace voiceengine {
+      interface org.webrtc.voiceengine.WebRtcAudioTrack.WebRtcAudioTrackErrorCallback {
+          {abstract} + onWebRtcAudioTrackError()
+          {abstract} + onWebRtcAudioTrackInitError()
+          {abstract} + onWebRtcAudioTrackStartError()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace voiceengine {
+      class org.webrtc.voiceengine.WebRtcAudioUtils {
+          {static} - BLACKLISTED_AEC_MODELS : String[]
+          {static} - BLACKLISTED_NS_MODELS : String[]
+          {static} - BLACKLISTED_OPEN_SL_ES_MODELS : String[]
+          {static} - DEFAULT_SAMPLE_RATE_HZ : int
+          {static} - TAG : String
+          {static} - defaultSampleRateHz : int
+          {static} - isDefaultSampleRateOverridden : boolean
+          {static} - useWebRtcBasedAcousticEchoCanceler : boolean
+          {static} - useWebRtcBasedNoiseSuppressor : boolean
+          {static} + deviceIsBlacklistedForOpenSLESUsage()
+          {static} + getBlackListedModelsForAecUsage()
+          {static} + getBlackListedModelsForNsUsage()
+          {static} + getDefaultSampleRateHz()
+          {static} + getThreadInfo()
+          {static} + isAcousticEchoCancelerSupported()
+          {static} + isAutomaticGainControlSupported()
+          {static} + isDefaultSampleRateOverridden()
+          {static} + isNoiseSuppressorSupported()
+          {static} + runningOnEmulator()
+          {static} + setDefaultSampleRateHz()
+          {static} + setWebRtcBasedAcousticEchoCanceler()
+          {static} + setWebRtcBasedAutomaticGainControl()
+          {static} + setWebRtcBasedNoiseSuppressor()
+          {static} + useWebRtcBasedAcousticEchoCanceler()
+          {static} + useWebRtcBasedAutomaticGainControl()
+          {static} + useWebRtcBasedNoiseSuppressor()
+          {static} ~ logAudioState()
+          {static} ~ logDeviceInfo()
+          {static} ~ modeToString()
+          {static} - deviceTypeToString()
+          {static} - hasMicrophone()
+          {static} - isVolumeFixed()
+          {static} - logAudioDeviceInfo()
+          {static} - logAudioStateBasic()
+          {static} - logAudioStateVolume()
+          {static} - logIsStreamMute()
+          {static} - streamTypeToString()
+      }
+    }
+  }
+  
+
+  org.webrtc.voiceengine.WebRtcAudioManager o-- org.webrtc.voiceengine.WebRtcAudioManager.VolumeLogger : volumeLogger
+  org.webrtc.voiceengine.WebRtcAudioManager +-down- org.webrtc.voiceengine.WebRtcAudioManager.VolumeLogger
+  org.webrtc.voiceengine.WebRtcAudioManager.VolumeLogger +-down- org.webrtc.voiceengine.WebRtcAudioManager.VolumeLogger.LogVolumeTask
+  org.webrtc.voiceengine.WebRtcAudioManager.VolumeLogger.LogVolumeTask -up-|> java.util.TimerTask
+  org.webrtc.voiceengine.WebRtcAudioRecord o-- org.webrtc.voiceengine.WebRtcAudioRecord.AudioRecordThread : audioThread
+  org.webrtc.voiceengine.WebRtcAudioRecord o-- org.webrtc.voiceengine.WebRtcAudioEffects : effects
+  org.webrtc.voiceengine.WebRtcAudioRecord +-down- org.webrtc.voiceengine.WebRtcAudioRecord.AudioRecordStartErrorCode
+  org.webrtc.voiceengine.WebRtcAudioRecord +-down- org.webrtc.voiceengine.WebRtcAudioRecord.AudioRecordThread
+  org.webrtc.voiceengine.WebRtcAudioRecord +-down- org.webrtc.voiceengine.WebRtcAudioRecord.AudioSamples
+  org.webrtc.voiceengine.WebRtcAudioRecord +-down- org.webrtc.voiceengine.WebRtcAudioRecord.WebRtcAudioRecordErrorCallback
+  org.webrtc.voiceengine.WebRtcAudioRecord +-down- org.webrtc.voiceengine.WebRtcAudioRecord.WebRtcAudioRecordSamplesReadyCallback
+  org.webrtc.voiceengine.WebRtcAudioTrack o-- org.webrtc.voiceengine.WebRtcAudioTrack.AudioTrackThread : audioThread
+  org.webrtc.voiceengine.WebRtcAudioTrack o-- org.webrtc.ThreadUtils.ThreadChecker : threadChecker
+  org.webrtc.voiceengine.WebRtcAudioTrack +-down- org.webrtc.voiceengine.WebRtcAudioTrack.AudioTrackStartErrorCode
+  org.webrtc.voiceengine.WebRtcAudioTrack +-down- org.webrtc.voiceengine.WebRtcAudioTrack.AudioTrackThread
+  org.webrtc.voiceengine.WebRtcAudioTrack +-down- org.webrtc.voiceengine.WebRtcAudioTrack.ErrorCallback
+  org.webrtc.voiceengine.WebRtcAudioTrack +-down- org.webrtc.voiceengine.WebRtcAudioTrack.WebRtcAudioTrackErrorCallback
+
+
+right footer
+
+
+PlantUML diagram generated by SketchIt! (https://bitbucket.org/pmesmeur/sketch.it)
+For more information about this tool, please contact philippe.mesmeur@gmail.com
+endfooter
+
+@enduml

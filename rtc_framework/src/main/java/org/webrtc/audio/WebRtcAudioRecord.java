@@ -43,7 +43,7 @@ import org.webrtc.audio.JavaAudioDeviceModule.AudioRecordStartErrorCode;
 import org.webrtc.audio.JavaAudioDeviceModule.AudioRecordStateCallback;
 import org.webrtc.audio.JavaAudioDeviceModule.SamplesReadyCallback;
 
-class WebRtcAudioRecord {
+public class WebRtcAudioRecord {
   private static final String TAG = "WebRtcAudioRecordExternal";
 
   // Requested size of each recorded buffer provided to the client.
@@ -107,6 +107,23 @@ class WebRtcAudioRecord {
   private final boolean isAcousticEchoCancelerSupported;
   private final boolean isNoiseSuppressorSupported;
 
+  // new add begin
+  private static WebRtcAudioRecordCallback mWebRtcAudioRecordCallback;
+  public static void setWebRtcAudioRecordCallback(WebRtcAudioRecordCallback callback) {
+    Logging.d("WebRtcAudioRecord", "Set record callback");
+    mWebRtcAudioRecordCallback = callback;
+  }
+  public interface WebRtcAudioRecordCallback {
+    void onWebRtcAudioRecordInit(int audioSource, int audioFormat,
+                                 int sampleRate, int channels, int bitPerSample,
+                                 int bufferPerSecond, int bufferSizeInBytes);
+    void onWebRtcAudioRecordStart();
+    void onWebRtcAudioRecording(ByteBuffer buffer, int bufferSize, boolean microphoneMute);
+    void onWebRtcAudioRecordStop();
+  }
+// new add end
+
+
   /**
    * Audio thread which keeps calling ByteBuffer.read() waiting for audio
    * to be recorded. Feeds recorded data to the native counterpart as a
@@ -142,6 +159,12 @@ class WebRtcAudioRecord {
           // in case they've been unregistered after stopRecording() returned.
           if (keepAlive) {
             nativeDataIsRecorded(nativeAudioRecord, bytesRead);
+            // new add begin
+            if (mWebRtcAudioRecordCallback != null) {
+              mWebRtcAudioRecordCallback.onWebRtcAudioRecording(byteBuffer,
+                      bytesRead, microphoneMute);
+            }
+            // new add end
           }
           if (audioSamplesReadyCallback != null) {
             // Copy the entire byte buffer array. The start of the byteBuffer is not necessarily
@@ -329,6 +352,16 @@ class WebRtcAudioRecord {
     effects.enable(audioRecord.getAudioSessionId());
     logMainParameters();
     logMainParametersExtended();
+
+    // new add begin
+    if (mWebRtcAudioRecordCallback != null) {
+      mWebRtcAudioRecordCallback
+              .onWebRtcAudioRecordInit(audioSource, 2, sampleRate,
+                      channels, 16, 100, bufferSizeInBytes);
+    }
+    // new add end
+
+
     // Check number of active recording sessions. Should be zero but we have seen conflict cases
     // and adding a log for it can help us figure out details about conflicting sessions.
     final int numActiveRecordingSessions =
@@ -366,6 +399,13 @@ class WebRtcAudioRecord {
     assertTrue(audioThread == null);
     try {
       audioRecord.startRecording();
+
+      // new add begin
+      if (mWebRtcAudioRecordCallback != null) {
+        mWebRtcAudioRecordCallback.onWebRtcAudioRecordStart();
+      }
+      // new add end
+
     } catch (IllegalStateException e) {
       reportWebRtcAudioRecordStartError(AudioRecordStartErrorCode.AUDIO_RECORD_START_EXCEPTION,
           "AudioRecord.startRecording failed: " + e.getMessage());
@@ -402,6 +442,13 @@ class WebRtcAudioRecord {
     audioThread = null;
     effects.release();
     releaseAudioResources();
+
+    // new add begin
+    if(mWebRtcAudioRecordCallback != null) {
+      mWebRtcAudioRecordCallback.onWebRtcAudioRecordStop();
+    }
+    // new add end
+
     return true;
   }
 

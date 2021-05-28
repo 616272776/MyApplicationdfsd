@@ -1,0 +1,499 @@
+@startuml
+
+title __AUDIO's Class Diagram__\n
+
+  namespace org.webrtc {
+    namespace audio {
+      interface org.webrtc.audio.AudioDeviceModule {
+          {abstract} + getNativeAudioDeviceModulePointer()
+          {abstract} + release()
+          {abstract} + setMicrophoneMute()
+          {abstract} + setSpeakerMute()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace audio {
+      class org.webrtc.audio.JavaAudioDeviceModule {
+          {static} - TAG : String
+          - audioManager : AudioManager
+          - context : Context
+          - inputSampleRate : int
+          - nativeAudioDeviceModule : long
+          - nativeLock : Object
+          - outputSampleRate : int
+          - useStereoInput : boolean
+          - useStereoOutput : boolean
+          {static} + builder()
+          + getNativeAudioDeviceModulePointer()
+          {static} + isBuiltInAcousticEchoCancelerSupported()
+          {static} + isBuiltInNoiseSuppressorSupported()
+          + release()
+          + setMicrophoneMute()
+          + setPreferredInputDevice()
+          + setSpeakerMute()
+          - JavaAudioDeviceModule()
+          {static} - nativeCreateAudioDeviceModule()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace audio {
+      interface org.webrtc.audio.JavaAudioDeviceModule.AudioRecordErrorCallback {
+          {abstract} + onWebRtcAudioRecordError()
+          {abstract} + onWebRtcAudioRecordInitError()
+          {abstract} + onWebRtcAudioRecordStartError()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace audio {
+      enum AudioRecordStartErrorCode {
+        AUDIO_RECORD_START_EXCEPTION
+        AUDIO_RECORD_START_STATE_MISMATCH
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace audio {
+      interface org.webrtc.audio.JavaAudioDeviceModule.AudioRecordStateCallback {
+          {abstract} + onWebRtcAudioRecordStart()
+          {abstract} + onWebRtcAudioRecordStop()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace audio {
+      class org.webrtc.audio.JavaAudioDeviceModule.AudioSamples {
+          - audioFormat : int
+          - channelCount : int
+          - data : byte[]
+          - sampleRate : int
+          + AudioSamples()
+          + getAudioFormat()
+          + getChannelCount()
+          + getData()
+          + getSampleRate()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace audio {
+      interface org.webrtc.audio.JavaAudioDeviceModule.AudioTrackErrorCallback {
+          {abstract} + onWebRtcAudioTrackError()
+          {abstract} + onWebRtcAudioTrackInitError()
+          {abstract} + onWebRtcAudioTrackStartError()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace audio {
+      enum AudioTrackStartErrorCode {
+        AUDIO_TRACK_START_EXCEPTION
+        AUDIO_TRACK_START_STATE_MISMATCH
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace audio {
+      interface org.webrtc.audio.JavaAudioDeviceModule.AudioTrackStateCallback {
+          {abstract} + onWebRtcAudioTrackStart()
+          {abstract} + onWebRtcAudioTrackStop()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace audio {
+      class org.webrtc.audio.JavaAudioDeviceModule.Builder {
+          - audioAttributes : AudioAttributes
+          - audioFormat : int
+          - audioManager : AudioManager
+          - audioSource : int
+          - context : Context
+          - inputSampleRate : int
+          - outputSampleRate : int
+          - scheduler : ScheduledExecutorService
+          - useHardwareAcousticEchoCanceler : boolean
+          - useHardwareNoiseSuppressor : boolean
+          - useLowLatency : boolean
+          - useStereoInput : boolean
+          - useStereoOutput : boolean
+          + createAudioDeviceModule()
+          + setAudioAttributes()
+          + setAudioFormat()
+          + setAudioRecordErrorCallback()
+          + setAudioRecordStateCallback()
+          + setAudioSource()
+          + setAudioTrackErrorCallback()
+          + setAudioTrackStateCallback()
+          + setInputSampleRate()
+          + setOutputSampleRate()
+          + setSampleRate()
+          + setSamplesReadyCallback()
+          + setScheduler()
+          + setUseHardwareAcousticEchoCanceler()
+          + setUseHardwareNoiseSuppressor()
+          + setUseLowLatency()
+          + setUseStereoInput()
+          + setUseStereoOutput()
+          - Builder()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace audio {
+      interface org.webrtc.audio.JavaAudioDeviceModule.SamplesReadyCallback {
+          {abstract} + onWebRtcAudioRecordSamplesReady()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace audio {
+      class org.webrtc.audio.LegacyAudioDeviceModule {
+          + getNativeAudioDeviceModulePointer()
+          + release()
+          + setMicrophoneMute()
+          + setSpeakerMute()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace audio {
+      class org.webrtc.audio.LowLatencyAudioBufferManager {
+          {static} - TAG : String
+          - bufferIncreaseCounter : int
+          - keepLoweringBufferSize : boolean
+          - prevUnderrunCount : int
+          - ticksUntilNextDecrease : int
+          + LowLatencyAudioBufferManager()
+          + maybeAdjustBufferSize()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace audio {
+      class org.webrtc.audio.VolumeLogger {
+          {static} - TAG : String
+          {static} - THREAD_NAME : String
+          {static} - TIMER_PERIOD_IN_SECONDS : int
+          - audioManager : AudioManager
+          - timer : Timer
+          + VolumeLogger()
+          + start()
+          + stop()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace audio {
+      class org.webrtc.audio.VolumeLogger.LogVolumeTask {
+          - maxRingVolume : int
+          - maxVoiceCallVolume : int
+          + run()
+          ~ LogVolumeTask()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace audio {
+      class org.webrtc.audio.WebRtcAudioEffects {
+          {static} - AOSP_ACOUSTIC_ECHO_CANCELER : UUID
+          {static} - AOSP_NOISE_SUPPRESSOR : UUID
+          {static} - DEBUG : boolean
+          {static} - TAG : String
+          - aec : AcousticEchoCanceler
+          {static} - cachedEffects : Descriptor[]
+          - ns : NoiseSuppressor
+          - shouldEnableAec : boolean
+          - shouldEnableNs : boolean
+          + WebRtcAudioEffects()
+          + enable()
+          {static} + isAcousticEchoCancelerSupported()
+          {static} + isNoiseSuppressorSupported()
+          + release()
+          + setAEC()
+          + setNS()
+          {static} - assertTrue()
+          - effectTypeIsVoIP()
+          {static} - getAvailableEffects()
+          {static} - isEffectTypeAvailable()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace audio {
+      class org.webrtc.audio.WebRtcAudioManager {
+          {static} - BITS_PER_SAMPLE : int
+          {static} - DEFAULT_FRAME_PER_BUFFER : int
+          {static} - DEFAULT_SAMPLE_RATE_HZ : int
+          {static} - TAG : String
+          {static} ~ getAudioManager()
+          {static} ~ getInputBufferSize()
+          {static} ~ getOutputBufferSize()
+          {static} ~ getSampleRate()
+          {static} - getLowLatencyFramesPerBuffer()
+          {static} - getMinInputFrameSize()
+          {static} - getMinOutputFrameSize()
+          {static} - getSampleRateForApiLevel()
+          {static} - isLowLatencyInputSupported()
+          {static} - isLowLatencyOutputSupported()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace audio {
+      class org.webrtc.audio.WebRtcAudioRecord {
+          {static} + DEFAULT_AUDIO_FORMAT : int
+          {static} + DEFAULT_AUDIO_SOURCE : int
+          {static} - AUDIO_RECORD_START : int
+          {static} - AUDIO_RECORD_STOP : int
+          {static} - AUDIO_RECORD_THREAD_JOIN_TIMEOUT_MS : long
+          {static} - BUFFERS_PER_SECOND : int
+          {static} - BUFFER_SIZE_FACTOR : int
+          {static} - CALLBACK_BUFFER_SIZE_MS : int
+          {static} - CHECK_REC_STATUS_DELAY_MS : int
+          {static} - TAG : String
+          - audioFormat : int
+          - audioManager : AudioManager
+          - audioRecord : AudioRecord
+          - audioSource : int
+          - audioSourceMatchesRecordingSessionRef : AtomicReference<Boolean>
+          - byteBuffer : ByteBuffer
+          - context : Context
+          - emptyBytes : byte[]
+          - executor : ScheduledExecutorService
+          - future : ScheduledFuture<String>
+          - isAcousticEchoCancelerSupported : boolean
+          - isNoiseSuppressorSupported : boolean
+          - microphoneMute : boolean
+          - nativeAudioRecord : long
+          {static} - nextSchedulerId : AtomicInteger
+          - preferredDevice : AudioDeviceInfo
+          + WebRtcAudioRecord()
+          + setMicrophoneMute()
+          + setNativeAudioRecord()
+          ~ WebRtcAudioRecord()
+          ~ isAcousticEchoCancelerSupported()
+          ~ isAudioConfigVerified()
+          ~ isAudioSourceMatchingRecordingSession()
+          ~ isNoiseSuppressorSupported()
+          {static} ~ newDefaultScheduler()
+          ~ setPreferredDevice()
+          {static} - assertTrue()
+          {static} - audioStateToString()
+          - channelCountToConfiguration()
+          {static} - checkDeviceMatch()
+          {static} - createAudioRecordOnLowerThanM()
+          {static} - createAudioRecordOnMOrHigher()
+          - doAudioRecordStateCallback()
+          - enableBuiltInAEC()
+          - enableBuiltInNS()
+          {static} - getBytesPerSample()
+          - initRecording()
+          {static} - logActiveRecordingConfigs()
+          - logMainParameters()
+          - logMainParametersExtended()
+          - logRecordingConfigurations()
+          - nativeCacheDirectBufferAddress()
+          - nativeDataIsRecorded()
+          - releaseAudioResources()
+          - reportWebRtcAudioRecordError()
+          - reportWebRtcAudioRecordInitError()
+          - reportWebRtcAudioRecordStartError()
+          - scheduleLogRecordingConfigurationsTask()
+          - startRecording()
+          - stopRecording()
+          {static} - verifyAudioConfig()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace audio {
+      class org.webrtc.audio.WebRtcAudioRecord.AudioRecordThread {
+          - keepAlive : boolean
+          + AudioRecordThread()
+          + run()
+          + stopThread()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace audio {
+      class org.webrtc.audio.WebRtcAudioTrack {
+          {static} - AUDIO_TRACK_START : int
+          {static} - AUDIO_TRACK_STOP : int
+          {static} - AUDIO_TRACK_THREAD_JOIN_TIMEOUT_MS : long
+          {static} - BITS_PER_SAMPLE : int
+          {static} - BUFFERS_PER_SECOND : int
+          {static} - CALLBACK_BUFFER_SIZE_MS : int
+          {static} - DEFAULT_USAGE : int
+          {static} - TAG : String
+          - audioAttributes : AudioAttributes
+          - audioManager : AudioManager
+          - audioTrack : AudioTrack
+          - byteBuffer : ByteBuffer
+          - context : Context
+          - emptyBytes : byte[]
+          - initialBufferSizeInFrames : int
+          - nativeAudioTrack : long
+          - speakerMute : boolean
+          - useLowLatency : boolean
+          + setNativeAudioTrack()
+          + setSpeakerMute()
+          ~ WebRtcAudioTrack()
+          ~ WebRtcAudioTrack()
+          - GetPlayoutUnderrunCount()
+          {static} - applyAttributesOnQOrHigher()
+          {static} - assertTrue()
+          - channelCountToConfiguration()
+          {static} - createAudioTrackOnLollipopOrHigher()
+          {static} - createAudioTrackOnLowerThanLollipop()
+          {static} - createAudioTrackOnOreoOrHigher()
+          - doAudioTrackStateCallback()
+          {static} - getAudioAttributes()
+          - getBufferSizeInFrames()
+          {static} - getDefaultUsageAttribute()
+          - getInitialBufferSizeInFrames()
+          - getStreamMaxVolume()
+          - getStreamVolume()
+          - initPlayout()
+          - isVolumeFixed()
+          - logBufferCapacityInFrames()
+          - logBufferSizeInFrames()
+          - logMainParameters()
+          - logMainParametersExtended()
+          {static} - logNativeOutputSampleRate()
+          - logUnderrunCount()
+          {static} - nativeCacheDirectBufferAddress()
+          {static} - nativeGetPlayoutData()
+          - releaseAudioResources()
+          - reportWebRtcAudioTrackError()
+          - reportWebRtcAudioTrackInitError()
+          - reportWebRtcAudioTrackStartError()
+          - setStreamVolume()
+          - startPlayout()
+          - stopPlayout()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace audio {
+      class org.webrtc.audio.WebRtcAudioTrack.AudioTrackThread {
+          - keepAlive : boolean
+          + AudioTrackThread()
+          + run()
+          + stopThread()
+          - writeBytes()
+      }
+    }
+  }
+  
+
+  namespace org.webrtc {
+    namespace audio {
+      class org.webrtc.audio.WebRtcAudioUtils {
+          {static} - TAG : String
+          {static} + audioEncodingToString()
+          {static} + audioSourceToString()
+          {static} + channelMaskToString()
+          {static} + getThreadInfo()
+          {static} + runningOnEmulator()
+          {static} ~ deviceTypeToString()
+          {static} ~ logAudioState()
+          {static} ~ logDeviceInfo()
+          {static} ~ modeToString()
+          {static} - hasMicrophone()
+          {static} - isVolumeFixed()
+          {static} - logAudioDeviceInfo()
+          {static} - logAudioStateBasic()
+          {static} - logAudioStateVolume()
+          {static} - logIsStreamMute()
+          {static} - streamTypeToString()
+      }
+    }
+  }
+  
+
+  org.webrtc.audio.JavaAudioDeviceModule .up.|> org.webrtc.audio.AudioDeviceModule
+  org.webrtc.audio.JavaAudioDeviceModule o-- org.webrtc.audio.WebRtcAudioRecord : audioInput
+  org.webrtc.audio.JavaAudioDeviceModule o-- org.webrtc.audio.WebRtcAudioTrack : audioOutput
+  org.webrtc.audio.JavaAudioDeviceModule +-down- org.webrtc.audio.JavaAudioDeviceModule.AudioRecordErrorCallback
+  org.webrtc.audio.JavaAudioDeviceModule +-down- org.webrtc.audio.JavaAudioDeviceModule.AudioRecordStartErrorCode
+  org.webrtc.audio.JavaAudioDeviceModule +-down- org.webrtc.audio.JavaAudioDeviceModule.AudioRecordStateCallback
+  org.webrtc.audio.JavaAudioDeviceModule +-down- org.webrtc.audio.JavaAudioDeviceModule.AudioSamples
+  org.webrtc.audio.JavaAudioDeviceModule +-down- org.webrtc.audio.JavaAudioDeviceModule.AudioTrackErrorCallback
+  org.webrtc.audio.JavaAudioDeviceModule +-down- org.webrtc.audio.JavaAudioDeviceModule.AudioTrackStartErrorCode
+  org.webrtc.audio.JavaAudioDeviceModule +-down- org.webrtc.audio.JavaAudioDeviceModule.AudioTrackStateCallback
+  org.webrtc.audio.JavaAudioDeviceModule +-down- org.webrtc.audio.JavaAudioDeviceModule.Builder
+  org.webrtc.audio.JavaAudioDeviceModule +-down- org.webrtc.audio.JavaAudioDeviceModule.SamplesReadyCallback
+  org.webrtc.audio.JavaAudioDeviceModule.Builder o-- org.webrtc.audio.JavaAudioDeviceModule.AudioRecordErrorCallback : audioRecordErrorCallback
+  org.webrtc.audio.JavaAudioDeviceModule.Builder o-- org.webrtc.audio.JavaAudioDeviceModule.AudioRecordStateCallback : audioRecordStateCallback
+  org.webrtc.audio.JavaAudioDeviceModule.Builder o-- org.webrtc.audio.JavaAudioDeviceModule.AudioTrackErrorCallback : audioTrackErrorCallback
+  org.webrtc.audio.JavaAudioDeviceModule.Builder o-- org.webrtc.audio.JavaAudioDeviceModule.AudioTrackStateCallback : audioTrackStateCallback
+  org.webrtc.audio.JavaAudioDeviceModule.Builder o-- org.webrtc.audio.JavaAudioDeviceModule.SamplesReadyCallback : samplesReadyCallback
+  org.webrtc.audio.LegacyAudioDeviceModule .up.|> org.webrtc.audio.AudioDeviceModule
+  org.webrtc.audio.VolumeLogger +-down- org.webrtc.audio.VolumeLogger.LogVolumeTask
+  org.webrtc.audio.VolumeLogger.LogVolumeTask -up-|> java.util.TimerTask
+  org.webrtc.audio.WebRtcAudioRecord o-- org.webrtc.audio.JavaAudioDeviceModule.SamplesReadyCallback : audioSamplesReadyCallback
+  org.webrtc.audio.WebRtcAudioRecord o-- org.webrtc.audio.WebRtcAudioRecord.AudioRecordThread : audioThread
+  org.webrtc.audio.WebRtcAudioRecord o-- org.webrtc.audio.WebRtcAudioEffects : effects
+  org.webrtc.audio.WebRtcAudioRecord o-- org.webrtc.audio.JavaAudioDeviceModule.AudioRecordErrorCallback : errorCallback
+  org.webrtc.audio.WebRtcAudioRecord o-- org.webrtc.audio.JavaAudioDeviceModule.AudioRecordStateCallback : stateCallback
+  org.webrtc.audio.WebRtcAudioRecord +-down- org.webrtc.audio.WebRtcAudioRecord.AudioRecordThread
+  org.webrtc.audio.WebRtcAudioTrack o-- org.webrtc.audio.WebRtcAudioTrack.AudioTrackThread : audioThread
+  org.webrtc.audio.WebRtcAudioTrack o-- org.webrtc.audio.JavaAudioDeviceModule.AudioTrackErrorCallback : errorCallback
+  org.webrtc.audio.WebRtcAudioTrack o-- org.webrtc.audio.JavaAudioDeviceModule.AudioTrackStateCallback : stateCallback
+  org.webrtc.audio.WebRtcAudioTrack o-- org.webrtc.ThreadUtils.ThreadChecker : threadChecker
+  org.webrtc.audio.WebRtcAudioTrack o-- org.webrtc.audio.VolumeLogger : volumeLogger
+  org.webrtc.audio.WebRtcAudioTrack +-down- org.webrtc.audio.WebRtcAudioTrack.AudioTrackThread
+  org.webrtc.audio.WebRtcAudioTrack.AudioTrackThread o-- org.webrtc.audio.LowLatencyAudioBufferManager : bufferManager
+
+
+right footer
+
+
+PlantUML diagram generated by SketchIt! (https://bitbucket.org/pmesmeur/sketch.it)
+For more information about this tool, please contact philippe.mesmeur@gmail.com
+endfooter
+
+@enduml
