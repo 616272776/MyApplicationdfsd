@@ -176,6 +176,8 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     private void requestPermission() {
         if (!checkPermissionAllGranted()) {
             ActivityCompat.requestPermissions(MainActivity.this, permissions, PERMISSIONS_REQUEST_CODE);
+        }else {
+            init();
         }
     }
 
