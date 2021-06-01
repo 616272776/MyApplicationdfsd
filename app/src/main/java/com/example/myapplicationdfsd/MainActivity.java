@@ -1,11 +1,11 @@
 package com.example.myapplicationdfsd;
+
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -57,8 +57,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
 
     //权限
     private final static int PERMISSIONS_REQUEST_CODE = 1;
-    private String[] permissions = {Manifest.permission.CAMERA,Manifest.permission.RECORD_AUDIO,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE};
+    private String[] permissions = {Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO};
     private List<String> deniedPermission = new ArrayList<>();
 
     @Override
@@ -66,34 +65,14 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             requestPermission();
         }
 
 
+    }
 
-//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-//        } else {
-//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 1);
-//        }
-//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-//        } else {
-//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-//        }
-//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
-//        } else {
-//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, 1);
-//        }
-//
-//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED) {
-//        } else {
-//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET}, 1);
-//        }
-//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.MODIFY_AUDIO_SETTINGS) == PackageManager.PERMISSION_GRANTED) {
-//        } else {
-//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.MODIFY_AUDIO_SETTINGS}, 1);
-//        }
-
+    private void init() {
         AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 
         //最大音量
@@ -160,7 +139,6 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         videoCapturer.startCapture(480, 640, 30);
 
 
-
         localView = findViewById(R.id.localView);
         localView.setMirror(true);
         localView.init(eglBaseContext, null);
@@ -196,10 +174,11 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     }
 
     private void requestPermission() {
-        if(!checkPermissionAllGranted()){
-            ActivityCompat.requestPermissions(MainActivity.this,permissions,PERMISSIONS_REQUEST_CODE);
+        if (!checkPermissionAllGranted()) {
+            ActivityCompat.requestPermissions(MainActivity.this, permissions, PERMISSIONS_REQUEST_CODE);
         }
     }
+
     /**
      * 检查是否拥有指定的所有权限
      */
@@ -211,6 +190,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
                 return false;
             }
         }
+
         return true;
     }
 
@@ -228,7 +208,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
             }
             if (isAllGranted) {
                 // 所有的权限都授予了
-
+                init();
             } else {
                 requestPermission();
                 Toast.makeText(this, "申请权限", Toast.LENGTH_SHORT).show();
@@ -240,45 +220,45 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     }
 
     //打开扬声器
-   public void OpenSpeaker() {
+    public void OpenSpeaker() {
 
-     try{
-     AudioManager audioManager = (AudioManager) getSystemService  (Context.AUDIO_SERVICE);
-     //audioManager.setMode(AudioManager.ROUTE_SPEAKER);
-    audioManager.setMode(AudioManager.MODE_IN_CALL);
-     currVolume = audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL);
+        try {
+            AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            //audioManager.setMode(AudioManager.ROUTE_SPEAKER);
+            audioManager.setMode(AudioManager.MODE_IN_CALL);
+            currVolume = audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL);
 
-     if(!audioManager.isSpeakerphoneOn()) {
-     audioManager.setSpeakerphoneOn(true);
+            if (!audioManager.isSpeakerphoneOn()) {
+                audioManager.setSpeakerphoneOn(true);
 
-     audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL,
-                                audioManager.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL ),
-                                AudioManager.STREAM_VOICE_CALL);
-     }
-    } catch (Exception e) {
-      e.printStackTrace();
+                audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL,
+                        audioManager.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL),
+                        AudioManager.STREAM_VOICE_CALL);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Toast.makeText(this, "扬声器已经打开", Toast.LENGTH_SHORT).show();
     }
-       Toast.makeText(this,"扬声器已经打开", Toast.LENGTH_SHORT).show();
-   }
 
 
-  //关闭扬声器
-          public void CloseSpeaker() {
+    //关闭扬声器
+    public void CloseSpeaker() {
 
-    try {
-      AudioManager audioManager = (AudioManager)getSystemService   (Context.AUDIO_SERVICE);
-      if(audioManager != null) {
-      if(audioManager.isSpeakerphoneOn()) {
-        audioManager.setSpeakerphoneOn(false);
-        audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL,currVolume,
-                                       AudioManager.STREAM_VOICE_CALL);
-      }
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
+        try {
+            AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            if (audioManager != null) {
+                if (audioManager.isSpeakerphoneOn()) {
+                    audioManager.setSpeakerphoneOn(false);
+                    audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, currVolume,
+                            AudioManager.STREAM_VOICE_CALL);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Toast.makeText(this, "扬声器已经关闭", Toast.LENGTH_SHORT).show();
     }
-    Toast.makeText(this,"扬声器已经关闭", Toast.LENGTH_SHORT).show();
-  }
 
 
     private synchronized PeerConnection getOrCreatePeerConnection(String socketId) {
@@ -296,8 +276,8 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
             @Override
             public void onIceConnectionChange(PeerConnection.IceConnectionState iceConnectionState) {
                 super.onIceConnectionChange(iceConnectionState);
-                if(PeerConnection.IceConnectionState.DISCONNECTED.equals(iceConnectionState)){
-                    runOnUiThread(() ->{
+                if (PeerConnection.IceConnectionState.DISCONNECTED.equals(iceConnectionState)) {
+                    runOnUiThread(() -> {
                         // 清理下peerconnectMap
                         remoteViews[0].clearImage();
                         remoteViews[1].clearImage();
@@ -311,7 +291,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
                 super.onAddStream(mediaStream);
                 VideoTrack remoteVideoTrack = mediaStream.videoTracks.get(0);
                 runOnUiThread(() -> {
-                    remoteVideoTrack.addSink(remoteViews[(remoteViewsIndex++)%3]);
+                    remoteVideoTrack.addSink(remoteViews[(remoteViewsIndex++) % 3]);
                 });
             }
         });
@@ -412,12 +392,12 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     }
 
     public void speaker(View view) {
-        if(onSpeaker){
+        if (onSpeaker) {
             CloseSpeaker();
-            onSpeaker=false;
-        }else{
+            onSpeaker = false;
+        } else {
             OpenSpeaker();
-            onSpeaker=true;
+            onSpeaker = true;
         }
     }
 }
