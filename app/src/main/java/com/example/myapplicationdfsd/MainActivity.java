@@ -131,27 +131,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
                 System.out.println("视频帧");
             }
         });
-        WebRtcAudioRecord.setWebRtcAudioRecordCallback(new WebRtcAudioRecord.WebRtcAudioRecordCallback() {
-            @Override
-            public void onWebRtcAudioRecordInit(int audioSource, int audioFormat, int sampleRate, int channels, int bitPerSample, int bufferPerSecond, int bufferSizeInBytes) {
 
-            }
-
-            @Override
-            public void onWebRtcAudioRecordStart() {
-
-            }
-
-            @Override
-            public void onWebRtcAudioRecording(ByteBuffer buffer, int bufferSize, boolean microphoneMute) {
-                System.out.println("音频");
-            }
-
-            @Override
-            public void onWebRtcAudioRecordStop() {
-
-            }
-        });
 
         videoCapturer.initialize(surfaceTextureHelper, getApplicationContext(), videoSource.getCapturerObserver());
         videoCapturer.startCapture(480, 640, 30);
