@@ -33,6 +33,7 @@ import org.webrtc.VideoCapturer;
 import org.webrtc.VideoFrame;
 import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
+import org.webrtc.YuvHelper;
 import org.webrtc.audio.WebRtcAudioRecord;
 
 import java.nio.ByteBuffer;
@@ -57,8 +58,15 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
 
     //权限
     private final static int PERMISSIONS_REQUEST_CODE = 1;
-    private String[] permissions = {Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO};
+    private String[] permissions = {Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO
+    ,Manifest.permission.WRITE_EXTERNAL_STORAGE};
     private List<String> deniedPermission = new ArrayList<>();
+
+    //视频存储
+    MyVideoEncoder mVideoEncoder = null;
+    byte[] mYuvBuffer;
+    int yuvLength = 480 * 640 * 3 / 2;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +81,14 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     }
 
     private void init() {
+
+        //视频存储
+        if (mVideoEncoder == null) {
+            mVideoEncoder = new MyVideoEncoder();
+            mVideoEncoder.init("/sdcard/test_out.mp4", 640, 480);
+        }
+
+
         AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 
         //最大音量
@@ -94,12 +110,12 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         PeerConnectionFactory.Options options = new PeerConnectionFactory.Options();
         DefaultVideoEncoderFactory defaultVideoEncoderFactory =
                 new DefaultVideoEncoderFactory(eglBaseContext, true, true);
-        DefaultVideoDecoderFactory defaultVideoDecoderFactory =
+        DefaultVideoDecoderFactory defaultMyVideoDecoderFactory =
                 new DefaultVideoDecoderFactory(eglBaseContext);
         peerConnectionFactory = PeerConnectionFactory.builder()
                 .setOptions(options)
                 .setVideoEncoderFactory(defaultVideoEncoderFactory)
-                .setVideoDecoderFactory(defaultVideoDecoderFactory)
+                .setVideoDecoderFactory(defaultMyVideoDecoderFactory)
                 .createPeerConnectionFactory();
 
         SurfaceTextureHelper surfaceTextureHelper = SurfaceTextureHelper.create("CaptureThread", eglBaseContext);
@@ -110,6 +126,8 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         videoSource.setVideoSourceCallback(new VideoSource.VideoSourceCallback() {
             @Override
             public void onFrameCaptured(VideoFrame videoFrame) {
+                mVideoEncoder.encode(videoFrame);
+//                fillInputBuffer(buffer, videoFrameBuffer); 440 HardwareVideoEncoder
                 System.out.println("视频帧");
             }
         });
@@ -176,7 +194,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     private void requestPermission() {
         if (!checkPermissionAllGranted()) {
             ActivityCompat.requestPermissions(MainActivity.this, permissions, PERMISSIONS_REQUEST_CODE);
-        }else {
+        } else {
             init();
         }
     }
@@ -401,5 +419,10 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
             OpenSpeaker();
             onSpeaker = true;
         }
+    }
+
+    public void stopRecord(View view) {
+        if (mVideoEncoder != null) mVideoEncoder.release();
+        Toast.makeText(this, "停止录制", Toast.LENGTH_SHORT).show();
     }
 }
