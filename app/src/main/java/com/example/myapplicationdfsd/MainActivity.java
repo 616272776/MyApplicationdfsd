@@ -40,6 +40,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MainActivity extends AppCompatActivity implements SignalingClient.Callback {
 
@@ -50,7 +51,6 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     List<PeerConnection.IceServer> iceServers;
 
     HashMap<String, PeerConnection> peerConnectionMap;
-    HashMap<String, MediaStream> mediaStreamHashMap;
     SurfaceViewRenderer[] remoteViews;
     int remoteViewsIndex = 0;
     private int currVolume;
@@ -60,24 +60,19 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     private final static int PERMISSIONS_REQUEST_CODE = 1;
     private String[] permissions = {Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO
     ,Manifest.permission.WRITE_EXTERNAL_STORAGE};
-    private List<String> deniedPermission = new ArrayList<>();
 
     //视频存储
     MyVideoEncoder mVideoEncoder = null;
-    byte[] mYuvBuffer;
-    int yuvLength = 480 * 640 * 3 / 2;
+    private AtomicBoolean mVideoRecordStarted = new AtomicBoolean(false);
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             requestPermission();
         }
-
-
     }
 
     private void init() {
@@ -90,7 +85,6 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
 
 
         AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-
         //最大音量
         int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
         //当前音量
@@ -126,15 +120,15 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         videoSource.setVideoSourceCallback(new VideoSource.VideoSourceCallback() {
             @Override
             public void onFrameCaptured(VideoFrame videoFrame) {
-                mVideoEncoder.encode(videoFrame);
-//                fillInputBuffer(buffer, videoFrameBuffer); 440 HardwareVideoEncoder
-                System.out.println("视频帧");
+                if(mVideoRecordStarted.get()){
+                    mVideoEncoder.encode(videoFrame);
+                }
             }
         });
 
 
         videoCapturer.initialize(surfaceTextureHelper, getApplicationContext(), videoSource.getCapturerObserver());
-        videoCapturer.startCapture(480, 640, 30);
+        videoCapturer.startCapture(640, 480, 30);
 
 
         localView = findViewById(R.id.localView);
@@ -402,7 +396,15 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     }
 
     public void stopRecord(View view) {
-        if (mVideoEncoder != null) mVideoEncoder.release();
+        if (mVideoEncoder != null){
+            mVideoEncoder.release();
+        }
+        mVideoRecordStarted.set(false);
         Toast.makeText(this, "停止录制", Toast.LENGTH_SHORT).show();
+    }
+
+    public void startRecord(View view) {
+        mVideoEncoder.prepareEncoder();
+        mVideoRecordStarted.set(true);
     }
 }

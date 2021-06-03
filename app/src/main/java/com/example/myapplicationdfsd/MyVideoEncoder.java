@@ -1,9 +1,12 @@
 package com.example.myapplicationdfsd;
 
+import android.hardware.display.DisplayManager;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.util.Log;
 
 import org.webrtc.Logging;
@@ -22,22 +25,20 @@ public class MyVideoEncoder {
 
     private final static String VIDEO_MIME_TYPE = MediaFormat.MIMETYPE_VIDEO_AVC;
     private static final String AUDIO_MIME_TYPE = MediaFormat.MIMETYPE_AUDIO_AAC;
-    private static final long DEFAULT_TIMEOUT_US = 10000;
     private static final long DEQUEUE_TIME_OUT = 100L;
 
 
-
-    private int mVideoTrackIndex;
+    private int mVideoTrackIndex = -1;
     private int mAudioTrackIndex = -1;
     private boolean mStop = false;
     private final Object mLock = new Object();
 
     private AtomicBoolean mVideoThreadCancel = new AtomicBoolean(true);
     private AtomicBoolean mAudioThreadCancel = new AtomicBoolean(true);
+    private AtomicBoolean mVideoRecordStarted = new AtomicBoolean(false);
 
     //音频
     private LinkedBlockingQueue<AudioData> mAudioOutBufferQueue;
-//    private LinkedBlockingQueue<AudioData> mAudioInBufferQueue;
     private int mAudioSampleRate;
     private int mAudioChannels;
     private int mAudioBufferSize;
@@ -46,19 +47,34 @@ public class MyVideoEncoder {
 
     //muxer
     private MediaCodec mAudioCodec;
-    private MediaCodec mVideoCoder;
+    private MediaCodec mVideoCodec;
     private MediaMuxer mMediaMuxer;
     private AtomicBoolean mMuxerStarted = new AtomicBoolean(false);
     private long mLastAudioPresentationTimeUs = 0L;
     private long mNanoTime;
+    private int height;
+    private int width;
+
+    private Thread mAudioFeedThread;
+    private Thread mAudioWriteThread;
+    private Thread mVideoWriteThread;
+    private String outPath;
+    private Handler mRecorderThreadHandler;
+    private HandlerThread mRecorderThread;
 
     public void init(String outPath, int width, int height) {
         try {
+            mRecorderThread = new HandlerThread("MediaRecordController");
+            mRecorderThread.start();
+            mRecorderThreadHandler = new Handler(mRecorderThread.getLooper());
+            this.outPath = outPath;
+            this.width = width;
+            this.height = height;
             mAudioOutBufferQueue = new LinkedBlockingQueue<AudioData>(QUEUE_MAX_COUNT);
             mStop = false;
             mVideoTrackIndex = -1;
-            mMediaMuxer = new MediaMuxer(outPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
-            mVideoCoder = MediaCodec.createEncoderByType(VIDEO_MIME_TYPE);
+//            mMediaMuxer = new MediaMuxer(outPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
+            mVideoCodec = MediaCodec.createEncoderByType(VIDEO_MIME_TYPE);
 
             WebRtcAudioRecord.setWebRtcAudioRecordCallback(new WebRtcAudioRecord.WebRtcAudioRecordCallback() {
                 @Override
@@ -81,16 +97,17 @@ public class MyVideoEncoder {
 
                 @Override
                 public void onWebRtcAudioRecording(ByteBuffer buffer, int bufferSize, boolean microphoneMute) {
-                    System.out.println("音频");
-                    final ByteBuffer cpBuffer = ByteBuffer.allocateDirect(bufferSize);
-                    cpBuffer.order(buffer.order());
-                    cpBuffer.put(buffer.array(), buffer.arrayOffset(), bufferSize);
-                    cpBuffer.rewind();
-                    cpBuffer.limit(bufferSize);
-                    AudioData audioData = new AudioData(cpBuffer, System.nanoTime() / 1000L
-                            , bufferSize, 1);
-                    mAudioOutBufferQueue.offer(audioData);
-                    cpBuffer.clear();
+                    if (mVideoRecordStarted.get()) {
+                        final ByteBuffer cpBuffer = ByteBuffer.allocateDirect(bufferSize);
+                        cpBuffer.order(buffer.order());
+                        cpBuffer.put(buffer.array(), buffer.arrayOffset(), bufferSize);
+                        cpBuffer.rewind();
+                        cpBuffer.limit(bufferSize);
+                        AudioData audioData = new AudioData(cpBuffer, System.nanoTime() / 1000L
+                                , bufferSize, 1);
+                        mAudioOutBufferQueue.offer(audioData);
+                        cpBuffer.clear();
+                    }
                 }
 
                 @Override
@@ -99,113 +116,289 @@ public class MyVideoEncoder {
                 }
             });
 
-            //音频格式信息
-            MediaFormat audioFormat = MediaFormat.createAudioFormat(AUDIO_MIME_TYPE, mAudioSampleRate, mAudioChannels);
-            audioFormat.setInteger(MediaFormat.KEY_AAC_PROFILE, MediaCodecInfo.CodecProfileLevel.AACObjectLC);
-            audioFormat.setInteger(MediaFormat.KEY_BIT_RATE, mAudioBitsPerSample * mAudioSampleRate * 4);
-            audioFormat.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, mAudioBufferSize);
-            Log.d(TAG, "created audio format: " + audioFormat);
-            mAudioCodec = MediaCodec.createEncoderByType(AUDIO_MIME_TYPE);
-            mAudioCodec.configure(audioFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
-            mAudioCodec.start();
 
-            // 视频格式信息
-            MediaFormat mediaFormat = MediaFormat.createVideoFormat(VIDEO_MIME_TYPE, width, height);
-            mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible);
-            mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, width * height * 6);
-            mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 30);
-            mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1);
-            mVideoCoder.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
-            mVideoCoder.start();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    public void prepareEncoder() {
+
+
+        mRecorderThreadHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+//                    mState = STATE_PREPARING;
+                    if (mAudioFeedThread != null && mAudioFeedThread.isAlive()) {
+                        mAudioThreadCancel.set(true);
+                        mAudioFeedThread.join();
+                    }
+                    if (mAudioWriteThread != null && mAudioWriteThread.isAlive()) {
+                        mAudioThreadCancel.set(true);
+                        mAudioWriteThread.join();
+                    }
+//                    if (mVideoThread != null && mVideoThread.isAlive()) {
+//                        mVideoThreadCancel.set(true);
+//                        mVideoThread.join();
+//                    }
+
+//                    prepareEncoder();
+                    try {
+                        //音频格式信息
+                        MediaFormat audioFormat = MediaFormat.createAudioFormat(AUDIO_MIME_TYPE, mAudioSampleRate, mAudioChannels);
+                        audioFormat.setInteger(MediaFormat.KEY_AAC_PROFILE, MediaCodecInfo.CodecProfileLevel.AACObjectLC);
+                        audioFormat.setInteger(MediaFormat.KEY_BIT_RATE, mAudioBitsPerSample * mAudioSampleRate * 4);
+                        audioFormat.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, mAudioBufferSize);
+                        Log.d(TAG, "created audio format: " + audioFormat);
+                        mAudioCodec = MediaCodec.createEncoderByType(AUDIO_MIME_TYPE);
+                        mAudioCodec.configure(audioFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
+                        mAudioCodec.start();
+
+                        // 视频格式信息
+                        MediaFormat mediaFormat = MediaFormat.createVideoFormat(VIDEO_MIME_TYPE, width, height);
+                        mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible);
+                        mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, width * height * 6);
+                        mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 30);
+                        mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1);
+                        mVideoCodec.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
+                        mVideoCodec.start();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    mMediaMuxer = new MediaMuxer(outPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                mAudioThreadCancel.set(false);
+                mAudioFeedThread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        while (!mAudioThreadCancel.get()) {
+                            if (feedAudioData()) {
+                                break;
+                            }
+                        }
+                    }
+                });
+                mAudioFeedThread.start();
+
+                mAudioWriteThread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        while (!mAudioThreadCancel.get()) {
+                            if (writeAudioData()) {
+                                break;
+                            }
+                        }
+                    }
+                });
+                mAudioWriteThread.start();
+
+                mVideoThreadCancel.set(false);
+//                mVideoThread = new Thread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        while (!mVideoThreadCancel.get()) {
+//                            if (writeVideoData()) {
+//                                break;
+//                            }
+//                        }
+//                    }
+//                });
+//                mVideoThread.start();
+//                mState = STATE_RECORDING;
+            }
+        });
+//
+//
+//        mAudioFeedThread = new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                while (mVideoRecordStarted.get()) {
+//                    if (feedAudioData()) {
+//                        break;
+//                    }
+//                }
+//            }
+//        });
+//        mAudioFeedThread.start();
+//
+//        mAudioWriteThread = new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                while (mVideoRecordStarted.get()) {
+//                    if (writeAudioData()) {
+//                        break;
+//                    }
+//                }
+//            }
+//        });
+//        mAudioWriteThread.start();
+
+//        mVideoWriteThread = new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                while (mVideoRecordStarted.get()) {
+//                    if (writeVideoData()) {
+//                        break;
+//                    }
+//                }
+//            }
+//        });
+
+
+        mVideoRecordStarted.set(true);
+    }
+
+    private boolean writeVideoData() {
+        return false;
+    }
+
     public void release() {
         mStop = true;
-        if (mVideoCoder != null) {
-            mVideoCoder.stop();
-            mVideoCoder.release();
-            mVideoCoder = null;
-        }
-        if (mMediaMuxer != null) {
-            mMediaMuxer.release();
-            mMediaMuxer = null;
+        if (mRecorderThreadHandler != null) {
+            mRecorderThreadHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        if (mAudioFeedThread != null && mAudioFeedThread.isAlive()) {
+                            mAudioThreadCancel.set(true);
+                            mAudioFeedThread.join();
+                        }
+                        if (mAudioWriteThread != null && mAudioWriteThread.isAlive()) {
+                            mAudioThreadCancel.set(true);
+                            mAudioWriteThread.join();
+                        }
+//                        if (mVideoThread != null && mVideoThread.isAlive()) {
+//                            mVideoThreadCancel.set(true);
+//                            mVideoThread.join();
+//                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        mAudioThreadCancel.set(true);
+                        mVideoThreadCancel.set(true);
+                    }
+                    if (mAudioCodec != null) {
+                        mAudioCodec.stop();
+                        mAudioCodec.release();
+                        mAudioCodec = null;
+                    }
+                    if (mVideoCodec != null) {
+                        mVideoCodec.stop();
+                        mVideoCodec.release();
+                        mVideoCodec = null;
+                    }
+                    mAudioTrackIndex = -1;
+                    mVideoTrackIndex = -1;
+                    if (mMuxerStarted.get()) {
+                        mMuxerStarted.set(false);
+                        if (mMediaMuxer != null) {
+                            mMediaMuxer.stop();
+                            mMediaMuxer.release();
+                            mMediaMuxer = null;
+                        }
+                    }
+                    Logging.d(TAG, "released");
+                }
+            });
         }
     }
 
     public void encode(VideoFrame videoFrame) {
-        mNanoTime = System.nanoTime();
+        if (mVideoRecordStarted.get()) {
+            mNanoTime = System.nanoTime();
+            if (mVideoCodec == null || mMediaMuxer == null) {
+                Log.e(TAG, "mEncoder or mMediaMuxer is null");
+                return;
+            }
+            int inputBufferIndex = mVideoCodec.dequeueInputBuffer(DEQUEUE_TIME_OUT);
+            Log.d(TAG, "inputBufferIndex: " + inputBufferIndex);
+            if (inputBufferIndex == -1) {
+                Log.e(TAG, "no valid buffer available");
+                return;
+            }
+            ByteBuffer inputBuffer = mVideoCodec.getInputBuffer(inputBufferIndex);
+            VideoFrame.I420Buffer i420 = videoFrame.getBuffer().toI420();
+            YuvHelper.I420ToNV12(i420.getDataY(), i420.getStrideY(), i420.getDataU(), i420.getStrideU(),
+                    i420.getDataV(), i420.getStrideV(), inputBuffer, i420.getWidth(), i420.getHeight());
+            i420.release();
+            mVideoCodec.queueInputBuffer(inputBufferIndex, 0, videoFrame.getBuffer().getHeight() * videoFrame.getBuffer().getWidth() * 3 / 2, videoFrame.getTimestampNs() / 1000, 0);
 
-        if (mVideoCoder == null || mMediaMuxer == null) {
-            Log.e(TAG, "mEncoder or mMediaMuxer is null");
-            return;
-        }
-//        if (yuv == null) {
-//            Log.e(TAG, "input yuv data is null");
-//            return;
-//        }
-        int inputBufferIndex = mVideoCoder.dequeueInputBuffer(DEFAULT_TIMEOUT_US);
-        Log.d(TAG, "inputBufferIndex: " + inputBufferIndex);
-        if (inputBufferIndex == -1) {
-            Log.e(TAG, "no valid buffer available");
-            return;
-        }
-
-        ByteBuffer inputBuffer = mVideoCoder.getInputBuffer(inputBufferIndex);
-        VideoFrame.I420Buffer i420 = videoFrame.getBuffer().toI420();
-        YuvHelper.I420ToNV12(i420.getDataY(), i420.getStrideY(), i420.getDataU(), i420.getStrideU(),
-                i420.getDataV(), i420.getStrideV(), inputBuffer, i420.getWidth(), i420.getHeight());
-        i420.release();
-
-        mVideoCoder.queueInputBuffer(inputBufferIndex, 0, videoFrame.getBuffer().getHeight() * videoFrame.getBuffer().getWidth() * 3 / 2, videoFrame.getTimestampNs() / 1000, 0);
-        while (!mStop) {
-            MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
-            int outputBufferIndex = mVideoCoder.dequeueOutputBuffer(bufferInfo, DEFAULT_TIMEOUT_US);
-            Log.d(TAG, "outputBufferIndex: " + outputBufferIndex);
-            if (outputBufferIndex >= 0) {
-                ByteBuffer outputBuffer = mVideoCoder.getOutputBuffer(outputBufferIndex);
-                // write head info
-                if (mVideoTrackIndex == -1) {
-                    Log.d(TAG, "this is first frame, call writeHeadInfo first");
-                    mVideoTrackIndex = writeHeadInfo(outputBuffer, bufferInfo);
+            while (!mStop) {
+                MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
+                int outputBufferIndex = mVideoCodec.dequeueOutputBuffer(bufferInfo, DEQUEUE_TIME_OUT);
+                Log.d(TAG, "outputBufferIndex: " + outputBufferIndex);
+                if (outputBufferIndex >= 0) {
+                    ByteBuffer outputBuffer = mVideoCodec.getOutputBuffer(outputBufferIndex);
+                    // write head info
+//                    if (mVideoTrackIndex == -1) {
+//                        Log.d(TAG, "this is first frame, call writeHeadInfo first");
+//                        mVideoTrackIndex = writeHeadInfo(outputBuffer, bufferInfo);
+//                    }
+                    if ((bufferInfo.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) == 0) {
+                        Log.d(TAG, "write outputBuffer");
+                        mMediaMuxer.writeSampleData(mVideoTrackIndex, outputBuffer, bufferInfo);
+                    }
+                    mVideoCodec.releaseOutputBuffer(outputBufferIndex, false);
+                    break; // 跳出循环
+                } else if (outputBufferIndex == MediaCodec.INFO_TRY_AGAIN_LATER) {
+                    // 请求超时
+                    try {
+                        // wait 10ms
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {
+                    }
+                } else if (outputBufferIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
+                    // 后续输出格式变化
+                    if (mMuxerStarted.get()) {
+                        throw new IllegalStateException("output format already changed!");
+                    }
+                    MediaFormat newFormat = mVideoCodec.getOutputFormat();
+                    mVideoTrackIndex = mMediaMuxer.addTrack(newFormat);
+                    synchronized (mLock) {
+                        if (mVideoTrackIndex >= 0 && mVideoTrackIndex >= 0) {
+                            mMediaMuxer.start();
+                            mMuxerStarted.set(true);
+                            Logging.d(TAG, "started media muxer, mAudioTrackIndex=" + mAudioTrackIndex
+                                    + ",mVideoTrackIndex=" + mVideoTrackIndex);
+                        }
+                    }
                 }
-                if ((bufferInfo.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) == 0) {
-                    Log.d(TAG, "write outputBuffer");
-                    mMediaMuxer.writeSampleData(mVideoTrackIndex, outputBuffer, bufferInfo);
-                }
-                mVideoCoder.releaseOutputBuffer(outputBufferIndex, false);
-                break; // 跳出循环
+
             }
         }
+
     }
 
     private int writeHeadInfo(ByteBuffer outputBuffer, MediaCodec.BufferInfo bufferInfo) {
-        byte[] csd = new byte[bufferInfo.size];
-        outputBuffer.limit(bufferInfo.offset + bufferInfo.size);
-        outputBuffer.position(bufferInfo.offset);
-        outputBuffer.get(csd);
-        ByteBuffer sps = null;
-        ByteBuffer pps = null;
-        for (int i = bufferInfo.size - 1; i > 3; i--) {
-            if (csd[i] == 1 && csd[i - 1] == 0 && csd[i - 2] == 0 && csd[i - 3] == 0) {
-                sps = ByteBuffer.allocate(i - 3);
-                pps = ByteBuffer.allocate(bufferInfo.size - (i - 3));
-                sps.put(csd, 0, i - 3).position(0);
-                pps.put(csd, i - 3, bufferInfo.size - (i - 3)).position(0);
-            }
-        }
-        MediaFormat outputFormat = mVideoCoder.getOutputFormat();
-        if (sps != null && pps != null) {
-            outputFormat.setByteBuffer("csd-0", sps);
-            outputFormat.setByteBuffer("csd-1", pps);
-        }
+//        byte[] csd = new byte[bufferInfo.size];
+//        outputBuffer.limit(bufferInfo.offset + bufferInfo.size);
+//        outputBuffer.position(bufferInfo.offset);
+//        outputBuffer.get(csd);
+//        ByteBuffer sps = null;
+//        ByteBuffer pps = null;
+//        for (int i = bufferInfo.size - 1; i > 3; i--) {
+//            if (csd[i] == 1 && csd[i - 1] == 0 && csd[i - 2] == 0 && csd[i - 3] == 0) {
+//                sps = ByteBuffer.allocate(i - 3);
+//                pps = ByteBuffer.allocate(bufferInfo.size - (i - 3));
+//                sps.put(csd, 0, i - 3).position(0);
+//                pps.put(csd, i - 3, bufferInfo.size - (i - 3)).position(0);
+//            }
+//        }
+        MediaFormat outputFormat = mVideoCodec.getOutputFormat();
+//        if (sps != null && pps != null) {
+//            outputFormat.setByteBuffer("csd-0", sps);
+//            outputFormat.setByteBuffer("csd-1", pps);
+//        }
         int videoTrackIndex = mMediaMuxer.addTrack(outputFormat);
         Log.d(TAG, "videoTrackIndex: " + videoTrackIndex);
-        feedAudioData();
-        writeAudioData();
         mMediaMuxer.start();
+        mMuxerStarted.set(true);
         return videoTrackIndex;
     }
 
@@ -239,15 +432,15 @@ public class MyVideoEncoder {
 //            }
 //        }
 //        byte[] mixAudio = averageMix(bMulRoadAudios);
-        int index = mAudioCodec.dequeueInputBuffer((System.nanoTime() - mNanoTime) / 1000L);
+        int index = mAudioCodec.dequeueInputBuffer(DEQUEUE_TIME_OUT);
         if (index >= 0) {
             ByteBuffer inputBuffer = mAudioCodec.getInputBuffer(index);
             inputBuffer.clear();
 //            inputBuffer.put(mixAudio);
-            inputBuffer.order(audioOutBuffer.order());
+            inputBuffer.put(audioOutBuffer);
             mAudioCodec.queueInputBuffer(index, 0, size,
                     timeUs, // presentationTimeUs要与视频的一致（MediaProjection使用的是System.nanoTime() / 1000L）
-                    mAudioThreadCancel.get() ? MediaCodec.BUFFER_FLAG_END_OF_STREAM : 0);
+                    0);
         }
         return false;
     }
@@ -265,7 +458,7 @@ public class MyVideoEncoder {
             synchronized (mLock) {
                 if (mAudioTrackIndex >= 0 && mVideoTrackIndex >= 0) {
                     mMediaMuxer.start();
-//                    mMuxerStarted.set(true);
+                    mMuxerStarted.set(true);
                     Logging.d(TAG, "started media muxer, mAudioTrackIndex=" + mAudioTrackIndex
                             + ",mVideoTrackIndex=" + mVideoTrackIndex);
                 }
@@ -289,7 +482,9 @@ public class MyVideoEncoder {
                 audioBufferInfo.size = 0;
             }
             if (audioBufferInfo.size == 0) {
-                Logging.d(TAG, "info.size == 0, drop it.");
+                Logging.d(TAG, "inf3" +
+                        "" +
+                        " o.size == 0, drop it.");
                 encodedData = null;
             }
             if (encodedData != null && mMuxerStarted.get()
