@@ -66,11 +66,14 @@ public class SignalingClient {
             }
     };
 
+    private static boolean init = false;
     public void init(Callback callback) {
         this.callback = callback;
         try {
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(null, trustAll, null);
+                init=true;
+
             IO.setDefaultHostnameVerifier((hostname, session) -> true);
             IO.setDefaultSSLContext(sslContext);
 
@@ -83,7 +86,7 @@ public class SignalingClient {
 
             socket.on("created", args -> {
                 Log.e("chao", "room created:" + socket.id());
-                callback.onCreateRoom();
+                callback.onCreateRoom(socket.id());
             });
             socket.on("full", args -> {
                 Log.e("chao", "room full");
@@ -94,7 +97,7 @@ public class SignalingClient {
             });
             socket.on("joined", args -> {
                 Log.e("chao", "self joined:" + socket.id());
-                callback.onSelfJoined();
+                callback.onSelfJoined(socket.id());
             });
             socket.on("log", args -> {
                 Log.e("chao", "log call " + Arrays.toString(args));
@@ -166,9 +169,9 @@ public class SignalingClient {
     }
 
     public interface Callback {
-        void onCreateRoom();
+        void onCreateRoom(String socketId);
         void onPeerJoined(String socketId);
-        void onSelfJoined();
+        void onSelfJoined(String socketId);
         void onPeerLeave(String msg);
 
         void onOfferReceived(JSONObject data);

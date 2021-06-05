@@ -5,8 +5,10 @@ import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.text.TextUtils;
 import android.util.Log;
 
 import org.webrtc.Logging;
@@ -14,6 +16,7 @@ import org.webrtc.VideoFrame;
 import org.webrtc.YuvHelper;
 import org.webrtc.audio.WebRtcAudioRecord;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -62,68 +65,76 @@ public class MyVideoEncoder {
     private Handler mRecorderThreadHandler;
     private HandlerThread mRecorderThread;
 
-    public void init(String outPath, int width, int height) {
-        try {
-            mRecorderThread = new HandlerThread("MediaRecordController");
-            mRecorderThread.start();
-            mRecorderThreadHandler = new Handler(mRecorderThread.getLooper());
-            this.outPath = outPath;
-            this.width = width;
-            this.height = height;
-            mAudioOutBufferQueue = new LinkedBlockingQueue<AudioData>(QUEUE_MAX_COUNT);
-            mStop = false;
-            mVideoTrackIndex = -1;
-//            mMediaMuxer = new MediaMuxer(outPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
-            mVideoCodec = MediaCodec.createEncoderByType(VIDEO_MIME_TYPE);
+    private static final String FILE_SAVE_DIR;
 
-            WebRtcAudioRecord.setWebRtcAudioRecordCallback(new WebRtcAudioRecord.WebRtcAudioRecordCallback() {
-                @Override
-                public void onWebRtcAudioRecordInit(int audioSource, int audioFormat, int sampleRate,
-                                                    int channels, int bitPerSample, int bufferPerSecond, int bufferSizeInBytes) {
+    static {
+        FILE_SAVE_DIR = Environment.getExternalStorageDirectory().getPath() + "/rtc/";
+    }
+
+    public void init(String outPath, int width, int height) {
+
+        mRecorderThread = new HandlerThread("MediaRecordController");
+        mRecorderThread.start();
+        mRecorderThreadHandler = new Handler(mRecorderThread.getLooper());
+        this.outPath = outPath;
+        this.width = width;
+        this.height = height;
+        mAudioOutBufferQueue = new LinkedBlockingQueue<AudioData>(QUEUE_MAX_COUNT);
+
+
+        WebRtcAudioRecord.setWebRtcAudioRecordCallback(new WebRtcAudioRecord.WebRtcAudioRecordCallback() {
+            @Override
+            public void onWebRtcAudioRecordInit(int audioSource, int audioFormat, int sampleRate,
+                                                int channels, int bitPerSample, int bufferPerSecond, int bufferSizeInBytes) {
 //                    mAudioSource = audioSource;
 //                    mAudioFormat = audioFormat;
-                    mAudioSampleRate = sampleRate;
-                    mAudioChannels = channels;
-                    mAudioBitsPerSample = bitPerSample;
+                mAudioSampleRate = sampleRate;
+                mAudioChannels = channels;
+                mAudioBitsPerSample = bitPerSample;
 //                    mAudioBuffersPerSecond = bufferPerSecond;
-                    mAudioBufferSize = bufferSizeInBytes;
-                    mAudioOutBufferQueue = new LinkedBlockingQueue<AudioData>(QUEUE_MAX_COUNT);
+                mAudioBufferSize = bufferSizeInBytes;
+                mAudioOutBufferQueue = new LinkedBlockingQueue<AudioData>(QUEUE_MAX_COUNT);
+            }
+
+            @Override
+            public void onWebRtcAudioRecordStart() {
+
+            }
+
+            @Override
+            public void onWebRtcAudioRecording(ByteBuffer buffer, int bufferSize, boolean microphoneMute) {
+                if (mVideoRecordStarted.get()) {
+                    final ByteBuffer cpBuffer = ByteBuffer.allocateDirect(bufferSize);
+                    cpBuffer.order(buffer.order());
+                    cpBuffer.put(buffer.array(), buffer.arrayOffset(), bufferSize);
+                    cpBuffer.rewind();
+                    cpBuffer.limit(bufferSize);
+                    AudioData audioData = new AudioData(cpBuffer, System.nanoTime() / 1000L
+                            , bufferSize, 1);
+                    mAudioOutBufferQueue.offer(audioData);
+                    cpBuffer.clear();
                 }
+            }
 
-                @Override
-                public void onWebRtcAudioRecordStart() {
+            @Override
+            public void onWebRtcAudioRecordStop() {
 
-                }
-
-                @Override
-                public void onWebRtcAudioRecording(ByteBuffer buffer, int bufferSize, boolean microphoneMute) {
-                    if (mVideoRecordStarted.get()) {
-                        final ByteBuffer cpBuffer = ByteBuffer.allocateDirect(bufferSize);
-                        cpBuffer.order(buffer.order());
-                        cpBuffer.put(buffer.array(), buffer.arrayOffset(), bufferSize);
-                        cpBuffer.rewind();
-                        cpBuffer.limit(bufferSize);
-                        AudioData audioData = new AudioData(cpBuffer, System.nanoTime() / 1000L
-                                , bufferSize, 1);
-                        mAudioOutBufferQueue.offer(audioData);
-                        cpBuffer.clear();
-                    }
-                }
-
-                @Override
-                public void onWebRtcAudioRecordStop() {
-
-                }
-            });
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            }
+        });
     }
 
     public void prepareEncoder() {
-
+//        if (!mIsCreate.get()) {
+//            throw new RuntimeException("you need call onCreate method of MediaRecordController before start record");
+//        }
+        if (TextUtils.isEmpty(outPath)) {
+            outPath = FILE_SAVE_DIR + "/room.mp4";
+        }
+        File file = new File(outPath);
+        if (!file.getParentFile().exists()) {
+            file.getParentFile().mkdirs();
+        }
+        mNanoTime = System.nanoTime();
 
         mRecorderThreadHandler.post(new Runnable() {
             @Override
@@ -142,8 +153,6 @@ public class MyVideoEncoder {
 //                        mVideoThreadCancel.set(true);
 //                        mVideoThread.join();
 //                    }
-
-//                    prepareEncoder();
                     try {
                         //音频格式信息
                         MediaFormat audioFormat = MediaFormat.createAudioFormat(AUDIO_MIME_TYPE, mAudioSampleRate, mAudioChannels);
@@ -161,6 +170,7 @@ public class MyVideoEncoder {
                         mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, width * height * 6);
                         mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 30);
                         mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1);
+                        mVideoCodec = MediaCodec.createEncoderByType(VIDEO_MIME_TYPE);
                         mVideoCodec.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
                         mVideoCodec.start();
                     } catch (IOException e) {
@@ -213,42 +223,6 @@ public class MyVideoEncoder {
 //                mState = STATE_RECORDING;
             }
         });
-//
-//
-//        mAudioFeedThread = new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                while (mVideoRecordStarted.get()) {
-//                    if (feedAudioData()) {
-//                        break;
-//                    }
-//                }
-//            }
-//        });
-//        mAudioFeedThread.start();
-//
-//        mAudioWriteThread = new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                while (mVideoRecordStarted.get()) {
-//                    if (writeAudioData()) {
-//                        break;
-//                    }
-//                }
-//            }
-//        });
-//        mAudioWriteThread.start();
-
-//        mVideoWriteThread = new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                while (mVideoRecordStarted.get()) {
-//                    if (writeVideoData()) {
-//                        break;
-//                    }
-//                }
-//            }
-//        });
 
 
         mVideoRecordStarted.set(true);
@@ -335,11 +309,6 @@ public class MyVideoEncoder {
                 Log.d(TAG, "outputBufferIndex: " + outputBufferIndex);
                 if (outputBufferIndex >= 0) {
                     ByteBuffer outputBuffer = mVideoCodec.getOutputBuffer(outputBufferIndex);
-                    // write head info
-//                    if (mVideoTrackIndex == -1) {
-//                        Log.d(TAG, "this is first frame, call writeHeadInfo first");
-//                        mVideoTrackIndex = writeHeadInfo(outputBuffer, bufferInfo);
-//                    }
                     if ((bufferInfo.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) == 0) {
                         Log.d(TAG, "write outputBuffer");
                         mMediaMuxer.writeSampleData(mVideoTrackIndex, outputBuffer, bufferInfo);
@@ -375,33 +344,6 @@ public class MyVideoEncoder {
 
     }
 
-    private int writeHeadInfo(ByteBuffer outputBuffer, MediaCodec.BufferInfo bufferInfo) {
-//        byte[] csd = new byte[bufferInfo.size];
-//        outputBuffer.limit(bufferInfo.offset + bufferInfo.size);
-//        outputBuffer.position(bufferInfo.offset);
-//        outputBuffer.get(csd);
-//        ByteBuffer sps = null;
-//        ByteBuffer pps = null;
-//        for (int i = bufferInfo.size - 1; i > 3; i--) {
-//            if (csd[i] == 1 && csd[i - 1] == 0 && csd[i - 2] == 0 && csd[i - 3] == 0) {
-//                sps = ByteBuffer.allocate(i - 3);
-//                pps = ByteBuffer.allocate(bufferInfo.size - (i - 3));
-//                sps.put(csd, 0, i - 3).position(0);
-//                pps.put(csd, i - 3, bufferInfo.size - (i - 3)).position(0);
-//            }
-//        }
-        MediaFormat outputFormat = mVideoCodec.getOutputFormat();
-//        if (sps != null && pps != null) {
-//            outputFormat.setByteBuffer("csd-0", sps);
-//            outputFormat.setByteBuffer("csd-1", pps);
-//        }
-        int videoTrackIndex = mMediaMuxer.addTrack(outputFormat);
-        Log.d(TAG, "videoTrackIndex: " + videoTrackIndex);
-        mMediaMuxer.start();
-        mMuxerStarted.set(true);
-        return videoTrackIndex;
-    }
-
     private boolean feedAudioData() {
         if (mAudioOutBufferQueue.size() < 1) {
             try {
@@ -412,31 +354,13 @@ public class MyVideoEncoder {
             return false;
         }
         AudioData audioOut = mAudioOutBufferQueue.poll();
-//        AudioData audioIn = mAudioInBufferQueue.poll();
         ByteBuffer audioOutBuffer = audioOut.mData;
-//        ByteBuffer audioInBuffer = audioIn.mData;
         int size = audioOut.mSize;
-//        int inSize = audioIn.mSize;
-//        int size = Math.max(outSize, inSize);
         long timeUs = audioOut.mPresentationTimeUs;
-//        byte[][] bMulRoadAudios = new byte[2][size];
-//        audioOutBuffer.get(bMulRoadAudios[0], 0, size);
-//        audioInBuffer.get(bMulRoadAudios[1], 0, size);
-//        if (outSize > inSize) {
-//            for (int i = inSize; i < outSize; i++) {
-//                bMulRoadAudios[1][i] = 0x00;
-//            }
-//        } else {
-//            for (int i = outSize; i < inSize; i++) {
-//                bMulRoadAudios[0][i] = 0x00;
-//            }
-//        }
-//        byte[] mixAudio = averageMix(bMulRoadAudios);
         int index = mAudioCodec.dequeueInputBuffer(DEQUEUE_TIME_OUT);
         if (index >= 0) {
             ByteBuffer inputBuffer = mAudioCodec.getInputBuffer(index);
             inputBuffer.clear();
-//            inputBuffer.put(mixAudio);
             inputBuffer.put(audioOutBuffer);
             mAudioCodec.queueInputBuffer(index, 0, size,
                     timeUs, // presentationTimeUs要与视频的一致（MediaProjection使用的是System.nanoTime() / 1000L）

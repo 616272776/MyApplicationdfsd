@@ -56,6 +56,8 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     private int currVolume;
     private boolean onSpeaker = false;
 
+    private PeerConnection mPeerConnection;
+
     //权限
     private final static int PERMISSIONS_REQUEST_CODE = 1;
     private String[] permissions = {Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO
@@ -162,7 +164,8 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         mediaStream.addTrack(videoTrack);
         mediaStream.addTrack(audioTrack);
 
-        SignalingClient.get().init(this);
+
+
     }
 
     private void requestPermission() {
@@ -296,7 +299,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
 
 
     @Override
-    public void onCreateRoom() {
+    public void onCreateRoom(String socketId) {
 
     }
 
@@ -314,7 +317,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     }
 
     @Override
-    public void onSelfJoined() {
+    public void onSelfJoined(String socketId) {
 
     }
 
@@ -406,5 +409,22 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     public void startRecord(View view) {
         mVideoEncoder.prepareEncoder();
         mVideoRecordStarted.set(true);
+
+    }
+
+    public void closeConnect(View view) {
+        SignalingClient.get().destroy();
+        peerConnectionMap.forEach((key,value)->{
+            value.close();
+        });
+        peerConnectionMap.clear();
+        remoteViews[0].clearImage();
+        remoteViews[1].clearImage();
+        remoteViews[2].clearImage();
+    }
+
+    public void startConnect(View view) {
+        SignalingClient.get().init(this);
+
     }
 }
