@@ -7,6 +7,7 @@ import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -58,9 +59,19 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
 
     private PeerConnection mPeerConnection;
 
+    private Button speaker;
+    private Button button;
+    private Button button2;
+    private Button button5;
+    private Button button6;
+    private Button button3;
+    private AtomicBoolean mFunctionOpen = new AtomicBoolean(false);
+
+
+
     //权限
     private final static int PERMISSIONS_REQUEST_CODE = 1;
-    private String[] permissions = {Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO
+    private final String[] permissions = {Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO
     ,Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
     //视频存储
@@ -78,6 +89,13 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     }
 
     private void init() {
+
+        speaker = (Button) findViewById(R.id.speaker);
+        button = (Button) findViewById(R.id.button);
+        button2 = (Button) findViewById(R.id.button2);
+        button5 = (Button) findViewById(R.id.button5);
+        button6 = (Button) findViewById(R.id.button6);
+        button3 = (Button) findViewById(R.id.button3);
 
         //视频存储
         if (mVideoEncoder == null) {
@@ -425,6 +443,27 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
 
     public void startConnect(View view) {
         SignalingClient.get().init(this);
+
+    }
+
+    public void function(View view) {
+        if(mFunctionOpen.get()){
+            mFunctionOpen.set(false);
+            speaker.setAlpha(0);
+            button.setAlpha(0);
+            button2.setAlpha(0);
+            button5.setAlpha(0);
+            button6.setAlpha(0);
+            button3.setAlpha(0);
+        }else {
+            mFunctionOpen.set(true);
+            speaker.setAlpha(1);
+            button.setAlpha(1);
+            button2.setAlpha(1);
+            button5.setAlpha(1);
+            button6.setAlpha(1);
+            button3.setAlpha(1);
+        }
 
     }
 }
