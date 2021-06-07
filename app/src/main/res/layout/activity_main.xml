@@ -148,12 +148,13 @@
         android:layout_height="wrap_content"
         android:onClick="function"
         android:text="功能菜单"
-        android:visibility="invisible"
+        android:visibility="visible"
         app:layout_constraintBottom_toTopOf="@+id/hline"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="@+id/vline"
         app:layout_constraintTop_toTopOf="parent"
+        android:alpha="0"
         app:layout_constraintVertical_bias="0.0" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
