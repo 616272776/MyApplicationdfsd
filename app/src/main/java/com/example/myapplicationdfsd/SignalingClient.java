@@ -79,8 +79,11 @@ public class SignalingClient {
 
             socket = IO.socket("https://139.224.12.1:8084");
             socket.connect();
+            if(!socket.connected()){
+                Log.e(TAG, "signaling connect fail");
+                callback.socketConnectError();
+            }
 
-            Log.e(TAG, "signaling connect fail");
 
             socket.emit("create or join", room);
 
@@ -104,7 +107,7 @@ public class SignalingClient {
             });
             socket.on("bye", args -> {
                 Log.e("chao", "bye " + args[0]);
-                callback.onPeerLeave((String) args[0]);
+                callback.onPeerLeave((String) args[0],socket.id());
             });
             socket.on("message", args -> {
                 Log.e("chao", "message " + Arrays.toString(args));
@@ -130,6 +133,14 @@ public class SignalingClient {
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
+    }
+    public void reconnect(){
+        socket.emit("create or join", room);
+        socket.connect();
+    }
+    public void close(){
+        socket.emit("bye", socket.id());
+        socket.disconnect();
     }
 
     public void destroy() {
@@ -169,10 +180,12 @@ public class SignalingClient {
     }
 
     public interface Callback {
+        void socketConnectError();
+
         void onCreateRoom(String socketId);
         void onPeerJoined(String socketId);
         void onSelfJoined(String socketId);
-        void onPeerLeave(String msg);
+        void onPeerLeave(String msg,String socketId);
 
         void onOfferReceived(JSONObject data);
         void onAnswerReceived(JSONObject data);

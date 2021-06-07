@@ -12,6 +12,7 @@
         android:layout_height="wrap_content"
         android:onClick="speaker"
         android:text="扬声器"
+        android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -25,6 +26,7 @@
         android:layout_height="wrap_content"
         android:onClick="stopRecord"
         android:text="停止录制"
+        android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
@@ -39,6 +41,7 @@
         android:layout_marginBottom="156dp"
         android:onClick="startRecord"
         android:text="开始录制"
+        android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="@+id/localView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
@@ -51,6 +54,7 @@
         android:layout_marginBottom="47dp"
         android:onClick="startConnect"
         android:text="开始通话"
+        android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/localView"
         app:layout_constraintHorizontal_bias="0.0"
@@ -64,6 +68,7 @@
         android:layout_height="wrap_content"
         android:onClick="closeConnect"
         android:text="结束通话"
+        android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/localView"
         app:layout_constraintHorizontal_bias="0.0"
@@ -75,8 +80,9 @@
         android:id="@+id/button3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="功能菜单"
         android:onClick="function"
+        android:text="功能菜单"
+        android:visibility="visible"
         app:layout_constraintBottom_toTopOf="@+id/hline"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
@@ -135,5 +141,17 @@
         app:layout_constraintLeft_toLeftOf="@id/vline"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="@id/hline" />
+
+    <com.app.abby.xbanner.XBanner
+        android:id="@+id/banner"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+    </com.app.abby.xbanner.XBanner>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

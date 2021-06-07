@@ -1,11 +1,13 @@
 package com.example.myapplicationdfsd;
 
 import android.Manifest;
+import android.app.SmatekManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -14,6 +16,10 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
+import com.app.abby.xbanner.XBanner;
+import com.example.myapplicationdfsd.component.ButtonComponent;
+import com.example.myapplicationdfsd.ui.banner.BannerController;
 
 import org.json.JSONObject;
 import org.webrtc.AudioSource;
@@ -52,6 +58,9 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     List<PeerConnection.IceServer> iceServers;
 
     HashMap<String, PeerConnection> peerConnectionMap;
+    private String surfaceIndex0;
+    private String surfaceIndex1;
+    private String surfaceIndex2;
     SurfaceViewRenderer[] remoteViews;
     int remoteViewsIndex = 0;
     private int currVolume;
@@ -67,16 +76,23 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     private Button button3;
     private AtomicBoolean mFunctionOpen = new AtomicBoolean(false);
 
+    private AtomicBoolean mEquipmentNormal = new AtomicBoolean(false);
+    private AtomicBoolean startConnect = new AtomicBoolean(false);
 
+
+    // ui控件
+    private BannerController mBannerController;
+    private XBanner mXBanner;
 
     //权限
     private final static int PERMISSIONS_REQUEST_CODE = 1;
     private final String[] permissions = {Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO
-    ,Manifest.permission.WRITE_EXTERNAL_STORAGE};
+            , Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
     //视频存储
     MyVideoEncoder mVideoEncoder = null;
     private AtomicBoolean mVideoRecordStarted = new AtomicBoolean(false);
+    private SmatekManager smatekManager;
 
 
     @Override
@@ -89,7 +105,8 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     }
 
     private void init() {
-
+        checkEquipment();
+        smatekManager = (SmatekManager) getSystemService("smatek");
         speaker = (Button) findViewById(R.id.speaker);
         button = (Button) findViewById(R.id.button);
         button2 = (Button) findViewById(R.id.button2);
@@ -97,92 +114,140 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         button6 = (Button) findViewById(R.id.button6);
         button3 = (Button) findViewById(R.id.button3);
 
-        //视频存储
-        if (mVideoEncoder == null) {
-            mVideoEncoder = new MyVideoEncoder();
-            mVideoEncoder.init("/sdcard/test_out.mp4", 640, 480);
-        }
+        mXBanner = findViewById(R.id.banner);
 
+        // 轮播图
+        mBannerController = new BannerController();
+        mBannerController.prepare(findViewById(R.id.banner), 3000);
+        mBannerController.start();
 
-        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        //最大音量
-        int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-        //当前音量
-        int currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-
-
-        peerConnectionMap = new HashMap<>();
-        iceServers = new ArrayList<>();
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer());
-
-        eglBaseContext = EglBase.create().getEglBaseContext();
-
-        // create PeerConnectionFactory
-        PeerConnectionFactory.initialize(PeerConnectionFactory.InitializationOptions
-                .builder(this)
-                .createInitializationOptions());
-        PeerConnectionFactory.Options options = new PeerConnectionFactory.Options();
-        DefaultVideoEncoderFactory defaultVideoEncoderFactory =
-                new DefaultVideoEncoderFactory(eglBaseContext, true, true);
-        DefaultVideoDecoderFactory defaultMyVideoDecoderFactory =
-                new DefaultVideoDecoderFactory(eglBaseContext);
-        peerConnectionFactory = PeerConnectionFactory.builder()
-                .setOptions(options)
-                .setVideoEncoderFactory(defaultVideoEncoderFactory)
-                .setVideoDecoderFactory(defaultMyVideoDecoderFactory)
-                .createPeerConnectionFactory();
-
-        SurfaceTextureHelper surfaceTextureHelper = SurfaceTextureHelper.create("CaptureThread", eglBaseContext);
-        // create VideoCapturer
-        VideoCapturer videoCapturer = createCameraCapturer(true);
-        VideoSource videoSource = peerConnectionFactory.createVideoSource(videoCapturer.isScreencast());
-
-        videoSource.setVideoSourceCallback(new VideoSource.VideoSourceCallback() {
+        // 按钮
+        ButtonComponent buttonComponent = ButtonComponent.getInstance().prepare(this);
+        buttonComponent.setMainButtonCallback(new ButtonComponent.ButtonCallback() {
             @Override
-            public void onFrameCaptured(VideoFrame videoFrame) {
-                if(mVideoRecordStarted.get()){
-                    mVideoEncoder.encode(videoFrame);
+            public void onGPIO1() {
+
+            }
+
+            @Override
+            public void onGPIO2() {
+                if (startConnect.get()) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            closeConnect(null);
+                        }
+                    });
+
+                } else {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            startConnect(null);
+                        }
+                    });
+
                 }
+
             }
         });
 
 
-        videoCapturer.initialize(surfaceTextureHelper, getApplicationContext(), videoSource.getCapturerObserver());
-        videoCapturer.startCapture(640, 480, 30);
+        if (mEquipmentNormal.get()) {
+
+            //视频存储
+            if (mVideoEncoder == null) {
+                mVideoEncoder = new MyVideoEncoder();
+                mVideoEncoder.init("/sdcard/test_out.mp4", 640, 480);
+            }
 
 
-        localView = findViewById(R.id.localView);
-        localView.setMirror(true);
-        localView.init(eglBaseContext, null);
+            AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            //最大音量
+            int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+            //当前音量
+            int currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
 
-        // create VideoTrack
-        VideoTrack videoTrack = peerConnectionFactory.createVideoTrack("100", videoSource);
 
-        MediaConstraints constraints = new MediaConstraints();
-        AudioSource audioSource = peerConnectionFactory.createAudioSource(constraints);
-        AudioTrack audioTrack = peerConnectionFactory.createAudioTrack("101", audioSource);
+            peerConnectionMap = new HashMap<>();
+            iceServers = new ArrayList<>();
+            iceServers.add(PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer());
+
+            eglBaseContext = EglBase.create().getEglBaseContext();
+
+            // create PeerConnectionFactory
+            PeerConnectionFactory.initialize(PeerConnectionFactory.InitializationOptions
+                    .builder(this)
+                    .createInitializationOptions());
+            PeerConnectionFactory.Options options = new PeerConnectionFactory.Options();
+            DefaultVideoEncoderFactory defaultVideoEncoderFactory =
+                    new DefaultVideoEncoderFactory(eglBaseContext, true, true);
+            DefaultVideoDecoderFactory defaultMyVideoDecoderFactory =
+                    new DefaultVideoDecoderFactory(eglBaseContext);
+            peerConnectionFactory = PeerConnectionFactory.builder()
+                    .setOptions(options)
+                    .setVideoEncoderFactory(defaultVideoEncoderFactory)
+                    .setVideoDecoderFactory(defaultMyVideoDecoderFactory)
+                    .createPeerConnectionFactory();
+
+            SurfaceTextureHelper surfaceTextureHelper = SurfaceTextureHelper.create("CaptureThread", eglBaseContext);
+            // create VideoCapturer
+            VideoCapturer videoCapturer = createCameraCapturer(true);
+            VideoSource videoSource = peerConnectionFactory.createVideoSource(videoCapturer.isScreencast());
+
+            videoSource.setVideoSourceCallback(new VideoSource.VideoSourceCallback() {
+                @Override
+                public void onFrameCaptured(VideoFrame videoFrame) {
+                    if (mVideoRecordStarted.get()) {
+                        mVideoEncoder.encode(videoFrame);
+                    }
+                }
+            });
+
+
+            videoCapturer.initialize(surfaceTextureHelper, getApplicationContext(), videoSource.getCapturerObserver());
+            videoCapturer.startCapture(640, 480, 30);
+
+
+            localView = findViewById(R.id.localView);
+            localView.setMirror(true);
+            localView.init(eglBaseContext, null);
+
+            // create VideoTrack
+            VideoTrack videoTrack = peerConnectionFactory.createVideoTrack("100", videoSource);
+
+            MediaConstraints constraints = new MediaConstraints();
+            AudioSource audioSource = peerConnectionFactory.createAudioSource(constraints);
+            AudioTrack audioTrack = peerConnectionFactory.createAudioTrack("101", audioSource);
 
 
 //        // display in localView
-        videoTrack.addSink(localView);
+            videoTrack.addSink(localView);
 
 
-        remoteViews = new SurfaceViewRenderer[]{
-                findViewById(R.id.remoteView),
-                findViewById(R.id.remoteView2),
-                findViewById(R.id.remoteView3),
-        };
-        for (SurfaceViewRenderer remoteView : remoteViews) {
-            remoteView.setMirror(false);
-            remoteView.init(eglBaseContext, null);
+            remoteViews = new SurfaceViewRenderer[]{
+                    findViewById(R.id.remoteView),
+                    findViewById(R.id.remoteView2),
+                    findViewById(R.id.remoteView3),
+            };
+            for (SurfaceViewRenderer remoteView : remoteViews) {
+                remoteView.setMirror(false);
+                remoteView.init(eglBaseContext, null);
+            }
+
+            mediaStream = peerConnectionFactory.createLocalMediaStream("mediaStream");
+            mediaStream.addTrack(videoTrack);
+            mediaStream.addTrack(audioTrack);
         }
+    }
 
+    private void checkEquipment() {
+        Camera1Enumerator enumerator = new Camera1Enumerator(false);
+        final String[] deviceNames = enumerator.getDeviceNames();
 
-        mediaStream = peerConnectionFactory.createLocalMediaStream("mediaStream");
-        mediaStream.addTrack(videoTrack);
-        mediaStream.addTrack(audioTrack);
-
-
+        if (deviceNames.length > 0) {
+            mEquipmentNormal.set(true);
+        }
 
     }
 
@@ -277,6 +342,8 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
 
 
     private synchronized PeerConnection getOrCreatePeerConnection(String socketId) {
+
+
         PeerConnection peerConnection = peerConnectionMap.get(socketId);
         if (peerConnection != null) {
             return peerConnection;
@@ -289,10 +356,25 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
             }
 
             @Override
+            public void onSignalingChange(PeerConnection.SignalingState signalingState) {
+                super.onSignalingChange(signalingState);
+//                remoteViews[0].clearImage();
+//                remoteViews[1].clearImage();
+//                remoteViews[2].clearImage();
+            }
+
+            @Override
             public void onIceConnectionChange(PeerConnection.IceConnectionState iceConnectionState) {
                 super.onIceConnectionChange(iceConnectionState);
                 if (PeerConnection.IceConnectionState.DISCONNECTED.equals(iceConnectionState)) {
                     runOnUiThread(() -> {
+                        if (socketId.equals(surfaceIndex0)) {
+                            surfaceIndex0 = null;
+                        } else if (socketId.equals(surfaceIndex1)) {
+                            surfaceIndex1 = null;
+                        } else if (socketId.equals(surfaceIndex2)) {
+                            surfaceIndex2 = null;
+                        }
                         // 清理下peerconnectMap
                         remoteViews[0].clearImage();
                         remoteViews[1].clearImage();
@@ -306,15 +388,44 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
                 super.onAddStream(mediaStream);
                 VideoTrack remoteVideoTrack = mediaStream.videoTracks.get(0);
                 runOnUiThread(() -> {
-                    remoteVideoTrack.addSink(remoteViews[(remoteViewsIndex++) % 3]);
+                    int index;
+                    if (surfaceIndex0 == null) {
+                        surfaceIndex0 = socketId;
+                        index = 0;
+                    } else if (surfaceIndex1 == null) {
+                        surfaceIndex1 = socketId;
+                        index = 1;
+                    } else if (surfaceIndex2 == null) {
+                        surfaceIndex2 = socketId;
+                        index = 2;
+                    } else {
+                        index = -1;
+                    }
+
+                    if (index != -1) {
+                        remoteVideoTrack.addSink(remoteViews[index]);
+                    }
                 });
+            }
+
+            @Override
+            public void onRemoveStream(MediaStream mediaStream) {
+                super.onRemoveStream(mediaStream);
+
             }
         });
         peerConnection.addStream(mediaStream);
         peerConnectionMap.put(socketId, peerConnection);
+
+
         return peerConnection;
     }
 
+
+    @Override
+    public void socketConnectError() {
+        Toast.makeText(this, "socket连接失败", Toast.LENGTH_SHORT).show();
+    }
 
     @Override
     public void onCreateRoom(String socketId) {
@@ -340,8 +451,18 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     }
 
     @Override
-    public void onPeerLeave(String msg) {
+    public void onPeerLeave(String msg, String socketId) {
+        if (socketId.equals(surfaceIndex0)) {
+            surfaceIndex0 = null;
+        } else if (socketId.equals(surfaceIndex1)) {
+            surfaceIndex1 = null;
+        } else if (socketId.equals(surfaceIndex2)) {
+            surfaceIndex2 = null;
+        }
 
+        remoteViews[0].clearImage();
+        remoteViews[1].clearImage();
+        remoteViews[2].clearImage();
     }
 
     @Override
@@ -391,7 +512,6 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     private VideoCapturer createCameraCapturer(boolean isFront) {
         Camera1Enumerator enumerator = new Camera1Enumerator(false);
         final String[] deviceNames = enumerator.getDeviceNames();
-
         // First, try to find front facing camera
         for (String deviceName : deviceNames) {
             if (isFront ? enumerator.isFrontFacing(deviceName) : enumerator.isBackFacing(deviceName)) {
@@ -417,7 +537,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     }
 
     public void stopRecord(View view) {
-        if (mVideoEncoder != null){
+        if (mVideoEncoder != null) {
             mVideoEncoder.release();
         }
         mVideoRecordStarted.set(false);
@@ -431,23 +551,41 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     }
 
     public void closeConnect(View view) {
-        SignalingClient.get().destroy();
-        peerConnectionMap.forEach((key,value)->{
+        SignalingClient.get().close();
+        peerConnectionMap.forEach((key, value) -> {
             value.close();
         });
         peerConnectionMap.clear();
         remoteViews[0].clearImage();
         remoteViews[1].clearImage();
         remoteViews[2].clearImage();
+
+        surfaceIndex0 = null;
+        surfaceIndex1 = null;
+        surfaceIndex2 = null;
+
+
+        mXBanner.setVisibility(View.VISIBLE);
+        startConnect.set(false);
     }
 
+    private boolean index = false;
     public void startConnect(View view) {
-        SignalingClient.get().init(this);
+        if(!index){
+            SignalingClient.get().init(this);
+            index=true;
+        }else {
+            SignalingClient.get().reconnect();
+        }
+
+
+        mXBanner.setVisibility(View.INVISIBLE);
+        startConnect.set(true);
 
     }
 
     public void function(View view) {
-        if(mFunctionOpen.get()){
+        if (mFunctionOpen.get()) {
             mFunctionOpen.set(false);
             speaker.setAlpha(0);
             button.setAlpha(0);
@@ -455,7 +593,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
             button5.setAlpha(0);
             button6.setAlpha(0);
             button3.setAlpha(0);
-        }else {
+        } else {
             mFunctionOpen.set(true);
             speaker.setAlpha(1);
             button.setAlpha(1);
