@@ -81,7 +81,7 @@ public class SignalingClient {
             socket.connect();
             if(!socket.connected()){
                 Log.e(TAG, "signaling connect fail");
-                callback.socketConnectError();
+//                callback.socketConnectError();
             }
 
 
