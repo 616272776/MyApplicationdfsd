@@ -40,12 +40,16 @@ public class MyVideoEncoder {
     private AtomicBoolean mAudioThreadCancel = new AtomicBoolean(true);
     private AtomicBoolean mVideoRecordStarted = new AtomicBoolean(false);
 
+    public LinkedBlockingQueue<AudioData> getmAudioOutBufferQueue() {
+        return mAudioOutBufferQueue;
+    }
+
     //音频
     private LinkedBlockingQueue<AudioData> mAudioOutBufferQueue;
-    private int mAudioSampleRate;
-    private int mAudioChannels;
-    private int mAudioBufferSize;
-    private int mAudioBitsPerSample;
+    private int mAudioSampleRate = 44100;
+    private int mAudioChannels = 1;
+    private int mAudioBufferSize = 8192;
+    private int mAudioBitsPerSample = 16;
     private static final int QUEUE_MAX_COUNT = 100;
 
     //muxer
@@ -86,6 +90,7 @@ public class MyVideoEncoder {
             @Override
             public void onWebRtcAudioRecordInit(int audioSource, int audioFormat, int sampleRate,
                                                 int channels, int bitPerSample, int bufferPerSecond, int bufferSizeInBytes) {
+//                44100，1，16，8192
 //                    mAudioSource = audioSource;
 //                    mAudioFormat = audioFormat;
                 mAudioSampleRate = sampleRate;
