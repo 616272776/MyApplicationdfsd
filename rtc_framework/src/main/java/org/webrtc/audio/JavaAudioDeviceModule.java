@@ -30,6 +30,7 @@ public class JavaAudioDeviceModule implements AudioDeviceModule {
   public static Builder builder(Context context) {
     return new Builder(context);
   }
+  public static WebRtcAudioRecord MyAudioInput;
 
   public static class Builder {
     private final Context context;
@@ -248,6 +249,7 @@ public class JavaAudioDeviceModule implements AudioDeviceModule {
       final WebRtcAudioRecord audioInput = new WebRtcAudioRecord(context, executor, audioManager,
           audioSource, audioFormat, audioRecordErrorCallback, audioRecordStateCallback,
           samplesReadyCallback, useHardwareAcousticEchoCanceler, useHardwareNoiseSuppressor);
+      MyAudioInput= audioInput;
       final WebRtcAudioTrack audioOutput = new WebRtcAudioTrack(context, audioManager,
           audioAttributes, audioTrackErrorCallback, audioTrackStateCallback, useLowLatency);
       return new JavaAudioDeviceModule(context, audioManager, audioInput, audioOutput,

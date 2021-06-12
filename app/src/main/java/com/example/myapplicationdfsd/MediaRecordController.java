@@ -68,9 +68,9 @@ public class MediaRecordController {
     private Thread mAudioFeedThread;
     private Thread mAudioWriteThread;
     private AtomicBoolean mVideoThreadCancel = new AtomicBoolean(true);
-    private AtomicBoolean mAudioThreadCancel = new AtomicBoolean(true);
+    public AtomicBoolean mAudioThreadCancel = new AtomicBoolean(true);
 
-    private LinkedBlockingQueue<AudioData> mAudioOutBufferQueue;
+    public static LinkedBlockingQueue<AudioData> mAudioOutBufferQueue =new LinkedBlockingQueue<AudioData>(QUEUE_MAX_COUNT);
     private int mAudioOutSource;
     private int mAudioOutFormat;
     private int mAudioOutSampleRate;
@@ -129,57 +129,56 @@ public class MediaRecordController {
         mState = STATE_IDLE;
         if (!mIsCreate.get()) {
             mIsCreate.set(true);
-            WebRtcAudioRecord.setWebRtcAudioRecordCallback(new WebRtcAudioRecord.WebRtcAudioRecordCallback() {
-                @Override
-                public void onWebRtcAudioRecordInit(int audioSource, int audioFormat, int sampleRate,
-                                                    int channels, int bitsPerSample, int buffersPerSecond,
-                                                    int bufferSize) {
-                    mIsAudioOutInit.set(true);
-                    mAudioOutSource = audioSource;
-                    mAudioOutFormat = audioFormat;
-                    mAudioOutSampleRate = sampleRate;
-                    mAudioOutChannels = channels;
-                    mAudioOutBitsPerSample = bitsPerSample;
-                    mAudioOutBuffersPerSecond = buffersPerSecond;
-                    mAudioOutBufferSize = bufferSize;
-                    mAudioOutBufferQueue = new LinkedBlockingQueue<AudioData>(QUEUE_MAX_COUNT);
-                    if (mIsAudioInInit.get()) {
-                        judgeAudioParams();
-                    }
-                    Logging.d(TAG, "onWebRtcAudioRecordInit audioSource:" + audioSource
-                            + ", audioFormat:" + audioFormat + ", sampleRate:" + sampleRate
-                            + ", channels:" + channels + ", bitsPerSample:" + bitsPerSample
-                            + ", buffersPerSecond:" + buffersPerSecond + ", bufferSize:" + bufferSize);
-                }
-
-                @Override
-                public void onWebRtcAudioRecordStart() {
-                    Logging.d(TAG, "onWebRtcAudioRecordStart");
-                }
-
-                @Override
-                public void onWebRtcAudioRecording(ByteBuffer byteBuffer,
-                                                   final int bytesRead, boolean microphoneMute) {
-//                    Logging.d(TAG, "onWebRtcAudioRecording byteBuffer.capacity():" + byteBuffer.capacity()
-//                            + ", bytesRead:" + bytesRead + ", microphoneMute:" + microphoneMute);
-                    if (!mAudioThreadCancel.get()) {
-                        final ByteBuffer cpBuffer = ByteBuffer.allocateDirect(bytesRead);
-                        cpBuffer.order(byteBuffer.order());
-                        cpBuffer.put(byteBuffer.array(), byteBuffer.arrayOffset(), bytesRead);
-                        cpBuffer.rewind();
-                        cpBuffer.limit(bytesRead);
-                        AudioData audioData = new AudioData(cpBuffer, System.nanoTime() / 1000L
-                                , bytesRead, 1);
-                        mAudioOutBufferQueue.offer(audioData);
-                        cpBuffer.clear();
-                    }
-                }
-
-                @Override
-                public void onWebRtcAudioRecordStop() {
-                    Logging.d(TAG, "onWebRtcAudioRecordStop");
-                }
-            });
+//            WebRtcAudioRecord.setWebRtcAudioRecordCallback(new WebRtcAudioRecord.WebRtcAudioRecordCallback() {
+//                @Override
+//                public void onWebRtcAudioRecordInit(int audioSource, int audioFormat, int sampleRate,
+//                                                    int channels, int bitsPerSample, int buffersPerSecond,
+//                                                    int bufferSize) {
+//                    mIsAudioOutInit.set(true);
+//                    mAudioOutSource = audioSource;
+//                    mAudioOutFormat = audioFormat;
+//                    mAudioOutSampleRate = sampleRate;
+//                    mAudioOutChannels = channels;
+//                    mAudioOutBitsPerSample = bitsPerSample;
+//                    mAudioOutBuffersPerSecond = buffersPerSecond;
+//                    mAudioOutBufferSize = bufferSize;
+//                    if (mIsAudioInInit.get()) {
+//                        judgeAudioParams();
+//                    }
+//                    Logging.d(TAG, "onWebRtcAudioRecordInit audioSource:" + audioSource
+//                            + ", audioFormat:" + audioFormat + ", sampleRate:" + sampleRate
+//                            + ", channels:" + channels + ", bitsPerSample:" + bitsPerSample
+//                            + ", buffersPerSecond:" + buffersPerSecond + ", bufferSize:" + bufferSize);
+//                }
+//
+//                @Override
+//                public void onWebRtcAudioRecordStart() {
+//                    Logging.d(TAG, "onWebRtcAudioRecordStart");
+//                }
+//
+//                @Override
+//                public void onWebRtcAudioRecording(ByteBuffer byteBuffer,
+//                                                   final int bytesRead, boolean microphoneMute) {
+////                    Logging.d(TAG, "onWebRtcAudioRecording byteBuffer.capacity():" + byteBuffer.capacity()
+////                            + ", bytesRead:" + bytesRead + ", microphoneMute:" + microphoneMute);
+//                    if (!mAudioThreadCancel.get()) {
+//                        final ByteBuffer cpBuffer = ByteBuffer.allocateDirect(bytesRead);
+//                        cpBuffer.order(byteBuffer.order());
+//                        cpBuffer.put(byteBuffer.array(), byteBuffer.arrayOffset(), bytesRead);
+//                        cpBuffer.rewind();
+//                        cpBuffer.limit(bytesRead);
+//                        AudioData audioData = new AudioData(cpBuffer, System.nanoTime() / 1000L
+//                                , bytesRead, 1);
+//                        mAudioOutBufferQueue.offer(audioData);
+//                        cpBuffer.clear();
+//                    }
+//                }
+//
+//                @Override
+//                public void onWebRtcAudioRecordStop() {
+//                    Logging.d(TAG, "onWebRtcAudioRecordStop");
+//                }
+//            });
 
 //            WebRtcAudioTrack.setWebRtcAudioTrackCallback(new WebRtcAudioTrack.WebRtcAudioTrackCallback() {
 //                @Override
@@ -639,17 +638,17 @@ public class MediaRecordController {
         void onFinish(String filePath);
     }
 
-    class AudioData {
-        ByteBuffer mData;
-        long mPresentationTimeUs;
-        int mSize;
-        int mType;  // 1-out;2-in
-
-        public AudioData(ByteBuffer data, long timeUs, int size, int type) {
-            mData = data;
-            mPresentationTimeUs = timeUs;
-            mSize = size;
-            mType = type;
-        }
-    }
+//    class AudioData {
+//        ByteBuffer mData;
+//        long mPresentationTimeUs;
+//        int mSize;
+//        int mType;  // 1-out;2-in
+//
+//        public AudioData(ByteBuffer data, long timeUs, int size, int type) {
+//            mData = data;
+//            mPresentationTimeUs = timeUs;
+//            mSize = size;
+//            mType = type;
+//        }
+//    }
 }

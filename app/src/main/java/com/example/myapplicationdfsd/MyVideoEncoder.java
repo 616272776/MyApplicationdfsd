@@ -42,10 +42,10 @@ public class MyVideoEncoder {
 
     //音频
     private LinkedBlockingQueue<AudioData> mAudioOutBufferQueue;
-    private int mAudioSampleRate;
-    private int mAudioChannels;
-    private int mAudioBufferSize;
-    private int mAudioBitsPerSample;
+    private int mAudioSampleRate= 44100;
+    private int mAudioChannels = 1;
+    private int mAudioBufferSize = 8192;
+    private int mAudioBitsPerSample =10;
     private static final int QUEUE_MAX_COUNT = 100;
 
     //muxer
@@ -93,7 +93,7 @@ public class MyVideoEncoder {
                 mAudioBitsPerSample = bitPerSample;
 //                    mAudioBuffersPerSecond = bufferPerSecond;
                 mAudioBufferSize = bufferSizeInBytes;
-                mAudioOutBufferQueue = new LinkedBlockingQueue<AudioData>(QUEUE_MAX_COUNT);
+//                mAudioOutBufferQueue = new LinkedBlockingQueue<AudioData>(QUEUE_MAX_COUNT);
             }
 
             @Override
@@ -149,10 +149,10 @@ public class MyVideoEncoder {
                         mAudioThreadCancel.set(true);
                         mAudioWriteThread.join();
                     }
-//                    if (mVideoThread != null && mVideoThread.isAlive()) {
-//                        mVideoThreadCancel.set(true);
-//                        mVideoThread.join();
-//                    }
+                    if (mVideoWriteThread != null && mVideoWriteThread.isAlive()) {
+                        mVideoThreadCancel.set(true);
+                        mVideoWriteThread.join();
+                    }
                     try {
                         //音频格式信息
                         MediaFormat audioFormat = MediaFormat.createAudioFormat(AUDIO_MIME_TYPE, mAudioSampleRate, mAudioChannels);
@@ -209,17 +209,17 @@ public class MyVideoEncoder {
                 mAudioWriteThread.start();
 
                 mVideoThreadCancel.set(false);
-//                mVideoThread = new Thread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        while (!mVideoThreadCancel.get()) {
-//                            if (writeVideoData()) {
-//                                break;
-//                            }
-//                        }
-//                    }
-//                });
-//                mVideoThread.start();
+                mVideoWriteThread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        while (!mVideoThreadCancel.get()) {
+                            if (writeVideoData()) {
+                                break;
+                            }
+                        }
+                    }
+                });
+                mVideoWriteThread.start();
 //                mState = STATE_RECORDING;
             }
         });
@@ -229,7 +229,44 @@ public class MyVideoEncoder {
     }
 
     private boolean writeVideoData() {
-        return false;
+
+            MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
+            int outputBufferIndex = mVideoCodec.dequeueOutputBuffer(bufferInfo, DEQUEUE_TIME_OUT);
+            Log.d(TAG, "outputBufferIndex: " + outputBufferIndex);
+            if (outputBufferIndex >= 0) {
+                ByteBuffer outputBuffer = mVideoCodec.getOutputBuffer(outputBufferIndex);
+                if ((bufferInfo.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) == 0) {
+                    Log.d(TAG, "write outputBuffer");
+                    mMediaMuxer.writeSampleData(mVideoTrackIndex, outputBuffer, bufferInfo);
+                }
+                mVideoCodec.releaseOutputBuffer(outputBufferIndex, false);
+
+            } else if (outputBufferIndex == MediaCodec.INFO_TRY_AGAIN_LATER) {
+                // 请求超时
+                try {
+                    // wait 10ms
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                }
+            } else if (outputBufferIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
+                // 后续输出格式变化
+                if (mMuxerStarted.get()) {
+                    throw new IllegalStateException("output format already changed!");
+                }
+                MediaFormat newFormat = mVideoCodec.getOutputFormat();
+                mVideoTrackIndex = mMediaMuxer.addTrack(newFormat);
+                synchronized (mLock) {
+                    if (mVideoTrackIndex >= 0 && mVideoTrackIndex >= 0) {
+                        mMediaMuxer.start();
+                        mMuxerStarted.set(true);
+                        Logging.d(TAG, "started media muxer, mAudioTrackIndex=" + mAudioTrackIndex
+                                + ",mVideoTrackIndex=" + mVideoTrackIndex);
+                    }
+                }
+            }
+
+
+        return true;
     }
 
     public void release() {
@@ -303,43 +340,7 @@ public class MyVideoEncoder {
             i420.release();
             mVideoCodec.queueInputBuffer(inputBufferIndex, 0, videoFrame.getBuffer().getHeight() * videoFrame.getBuffer().getWidth() * 3 / 2, videoFrame.getTimestampNs() / 1000, 0);
 
-            while (!mStop) {
-                MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
-                int outputBufferIndex = mVideoCodec.dequeueOutputBuffer(bufferInfo, DEQUEUE_TIME_OUT);
-                Log.d(TAG, "outputBufferIndex: " + outputBufferIndex);
-                if (outputBufferIndex >= 0) {
-                    ByteBuffer outputBuffer = mVideoCodec.getOutputBuffer(outputBufferIndex);
-                    if ((bufferInfo.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) == 0) {
-                        Log.d(TAG, "write outputBuffer");
-                        mMediaMuxer.writeSampleData(mVideoTrackIndex, outputBuffer, bufferInfo);
-                    }
-                    mVideoCodec.releaseOutputBuffer(outputBufferIndex, false);
-                    break; // 跳出循环
-                } else if (outputBufferIndex == MediaCodec.INFO_TRY_AGAIN_LATER) {
-                    // 请求超时
-                    try {
-                        // wait 10ms
-                        Thread.sleep(10);
-                    } catch (InterruptedException e) {
-                    }
-                } else if (outputBufferIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
-                    // 后续输出格式变化
-                    if (mMuxerStarted.get()) {
-                        throw new IllegalStateException("output format already changed!");
-                    }
-                    MediaFormat newFormat = mVideoCodec.getOutputFormat();
-                    mVideoTrackIndex = mMediaMuxer.addTrack(newFormat);
-                    synchronized (mLock) {
-                        if (mVideoTrackIndex >= 0 && mVideoTrackIndex >= 0) {
-                            mMediaMuxer.start();
-                            mMuxerStarted.set(true);
-                            Logging.d(TAG, "started media muxer, mAudioTrackIndex=" + mAudioTrackIndex
-                                    + ",mVideoTrackIndex=" + mVideoTrackIndex);
-                        }
-                    }
-                }
 
-            }
         }
 
     }

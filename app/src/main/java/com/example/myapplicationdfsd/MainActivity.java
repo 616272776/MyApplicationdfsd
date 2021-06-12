@@ -106,6 +106,9 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
 
     private void init() {
         checkEquipment();
+
+
+
         smatekManager = (SmatekManager) getSystemService("smatek");
         speaker = (Button) findViewById(R.id.speaker);
         button = (Button) findViewById(R.id.button);
@@ -239,6 +242,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
             mediaStream.addTrack(videoTrack);
             mediaStream.addTrack(audioTrack);
         }
+        function(null);
     }
 
     private void checkEquipment() {
@@ -585,23 +589,31 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     }
 
     public void function(View view) {
-        if (mFunctionOpen.get()) {
-            mFunctionOpen.set(false);
-            speaker.setAlpha(0);
-            button.setAlpha(0);
-            button2.setAlpha(0);
-            button5.setAlpha(0);
-            button6.setAlpha(0);
-            button3.setAlpha(0);
-        } else {
-            mFunctionOpen.set(true);
-            speaker.setAlpha(1);
-            button.setAlpha(1);
-            button2.setAlpha(1);
-            button5.setAlpha(1);
-            button6.setAlpha(1);
-            button3.setAlpha(1);
-        }
+        MyAudioRecordThread myAudioRecordThread = new MyAudioRecordThread(new MyAudioRecordThread.Callback() {
+            @Override
+            public void inited() {
 
+            }
+
+            @Override
+            public void recording(AudioData audioData) {
+if(mVideoRecordStarted.get() && MediaRecordController.getInstance().mAudioThreadCancel.get()){
+    MediaRecordController.mAudioOutBufferQueue.offer(audioData);
+}
+            }
+
+            @Override
+            public void stop() {
+
+            }
+
+            @Override
+            public void release() {
+
+            }
+        });
+        myAudioRecordThread.init();
+        Thread thread = new Thread(myAudioRecordThread);
+        thread.start();
     }
 }
