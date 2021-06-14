@@ -4,7 +4,10 @@ import android.Manifest;
 import android.app.SmatekManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.media.AudioFormat;
 import android.media.AudioManager;
+import android.media.AudioRecord;
+import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -42,11 +45,14 @@ import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
 import org.webrtc.YuvHelper;
 import org.webrtc.audio.WebRtcAudioRecord;
+import org.webrtc.voiceengine.WebRtcAudioTrack;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MainActivity extends AppCompatActivity implements SignalingClient.Callback {
@@ -106,9 +112,6 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
 
     private void init() {
         checkEquipment();
-
-
-
         smatekManager = (SmatekManager) getSystemService("smatek");
         speaker = (Button) findViewById(R.id.speaker);
         button = (Button) findViewById(R.id.button);
@@ -122,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         // 轮播图
         mBannerController = new BannerController();
         mBannerController.prepare(findViewById(R.id.banner), 3000);
-        mBannerController.start();
+//        mBannerController.start();
 
         // 按钮
         ButtonComponent buttonComponent = ButtonComponent.getInstance().prepare(this);
@@ -467,6 +470,13 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         remoteViews[0].clearImage();
         remoteViews[1].clearImage();
         remoteViews[2].clearImage();
+        PeerConnection peerConnection = peerConnectionMap.get(socketId);
+        if(peerConnection==null){
+
+        }else {
+            peerConnectionMap.remove(socketId);
+            peerConnection.dispose();
+        }
     }
 
     @Override
@@ -587,6 +597,25 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         startConnect.set(true);
 
     }
+
+    // 音频源：音频输入-麦克风
+    private final static int AUDIO_INPUT = MediaRecorder.AudioSource.MIC;
+
+    // 采样率
+    // 44100是目前的标准，但是某些设备仍然支持22050，16000，11025
+    // 采样频率一般共分为22.05KHz、44.1KHz、48KHz三个等级
+    private final static int AUDIO_SAMPLE_RATE = 44100;
+
+    // 音频通道 单声道
+    private final static int AUDIO_CHANNEL = AudioFormat.CHANNEL_IN_MONO;
+
+    // 音频格式：PCM编码
+    private final static int AUDIO_ENCODING = AudioFormat.ENCODING_PCM_16BIT;
+
+    private byte[] buffer;
+    private boolean isRecording;
+
+
 
     public void function(View view) {
         MyAudioRecordThread myAudioRecordThread = new MyAudioRecordThread(new MyAudioRecordThread.Callback() {
