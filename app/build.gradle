@@ -54,4 +54,5 @@ dependencies {
 
     // 轮播图
     implementation 'com.abby.app:xbanner:1.5.7'
+
 }

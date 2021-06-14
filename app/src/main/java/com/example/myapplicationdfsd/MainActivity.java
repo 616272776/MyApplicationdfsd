@@ -626,8 +626,8 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
 
             @Override
             public void recording(AudioData audioData) {
-if(mVideoRecordStarted.get() && MediaRecordController.getInstance().mAudioThreadCancel.get()){
-    MediaRecordController.mAudioOutBufferQueue.offer(audioData);
+if(mVideoRecordStarted.get() && !MyVideoEncoder.mAudioThreadCancel.get()){
+    MyVideoEncoder.mAudioOutBufferQueue.offer(audioData);
 }
             }
 

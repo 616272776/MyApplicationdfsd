@@ -37,7 +37,7 @@ public class MyVideoEncoder {
     private final Object mLock = new Object();
 
     private AtomicBoolean mVideoThreadCancel = new AtomicBoolean(true);
-    private AtomicBoolean mAudioThreadCancel = new AtomicBoolean(true);
+    public static AtomicBoolean mAudioThreadCancel = new AtomicBoolean(true);
     private AtomicBoolean mVideoRecordStarted = new AtomicBoolean(false);
 
     public LinkedBlockingQueue<AudioData> getmAudioOutBufferQueue() {
@@ -45,7 +45,7 @@ public class MyVideoEncoder {
     }
 
     //音频
-    private LinkedBlockingQueue<AudioData> mAudioOutBufferQueue;
+    public static LinkedBlockingQueue<AudioData> mAudioOutBufferQueue;
 
     private int mAudioSampleRate= 44100;
     private int mAudioChannels = 1;
@@ -273,7 +273,7 @@ public class MyVideoEncoder {
             }
 
 
-        return true;
+        return false;
     }
 
     public void release() {
@@ -291,10 +291,10 @@ public class MyVideoEncoder {
                             mAudioThreadCancel.set(true);
                             mAudioWriteThread.join();
                         }
-//                        if (mVideoThread != null && mVideoThread.isAlive()) {
-//                            mVideoThreadCancel.set(true);
-//                            mVideoThread.join();
-//                        }
+                        if (mVideoWriteThread != null && mVideoWriteThread.isAlive()) {
+                            mVideoThreadCancel.set(true);
+                            mVideoWriteThread.join();
+                        }
                     } catch (Exception e) {
                         e.printStackTrace();
                     } finally {
@@ -413,18 +413,22 @@ public class MyVideoEncoder {
                 Logging.d(TAG, "ignoring BUFFER_FLAG_CODEC_CONFIG");
                 audioBufferInfo.size = 0;
             }
+
             if (audioBufferInfo.size == 0) {
                 Logging.d(TAG, "inf3" +
                         "" +
                         " o.size == 0, drop it.");
                 encodedData = null;
             }
-            if (encodedData != null && mMuxerStarted.get()
+
+            if (encodedData != null
+                    && mMuxerStarted.get()
                     && mLastAudioPresentationTimeUs < audioBufferInfo.presentationTimeUs) {
                 mMediaMuxer.writeSampleData(mAudioTrackIndex, encodedData, audioBufferInfo);
                 mLastAudioPresentationTimeUs = audioBufferInfo.presentationTimeUs;
             }
             mAudioCodec.releaseOutputBuffer(outIndex, false);
+
             if ((audioBufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
                 return true;
             }
