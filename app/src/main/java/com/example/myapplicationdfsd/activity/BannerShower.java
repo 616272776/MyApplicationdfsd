@@ -1,9 +1,9 @@
-package com.example.myapplicationdfsd.ui.banner;
+package com.example.myapplicationdfsd.activity;
 
 import com.app.abby.xbanner.XBanner;
 import com.example.myapplicationdfsd.R;
 
-public class BannerController {
+public class BannerShower {
     private XBanner xbanner;
 
     public void prepare(XBanner xbanner, Integer delay) {

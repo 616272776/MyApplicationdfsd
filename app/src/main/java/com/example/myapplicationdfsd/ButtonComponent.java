@@ -1,4 +1,4 @@
-package com.example.myapplicationdfsd.component;
+package com.example.myapplicationdfsd;
 
 import android.annotation.SuppressLint;
 import android.app.SmatekManager;

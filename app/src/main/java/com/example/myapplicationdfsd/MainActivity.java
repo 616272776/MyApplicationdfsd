@@ -3,14 +3,13 @@ package com.example.myapplicationdfsd;
 import android.Manifest;
 import android.app.SmatekManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.AudioFormat;
 import android.media.AudioManager;
-import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -20,9 +19,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.app.abby.xbanner.XBanner;
-import com.example.myapplicationdfsd.component.ButtonComponent;
-import com.example.myapplicationdfsd.ui.banner.BannerController;
+import com.example.myapplicationdfsd.softWareSystem.service.DoorplateSystemManagerService;
 
 import org.json.JSONObject;
 import org.webrtc.AudioSource;
@@ -43,16 +40,10 @@ import org.webrtc.VideoCapturer;
 import org.webrtc.VideoFrame;
 import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
-import org.webrtc.YuvHelper;
-import org.webrtc.audio.WebRtcAudioRecord;
-import org.webrtc.voiceengine.WebRtcAudioTrack;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MainActivity extends AppCompatActivity implements SignalingClient.Callback {
@@ -83,12 +74,8 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     private AtomicBoolean mFunctionOpen = new AtomicBoolean(false);
 
     private AtomicBoolean mEquipmentNormal = new AtomicBoolean(false);
-    private AtomicBoolean startConnect = new AtomicBoolean(false);
+    public static AtomicBoolean startConnect = new AtomicBoolean(false);
 
-
-    // ui控件
-    private BannerController mBannerController;
-    private XBanner mXBanner;
 
     //权限
     private final static int PERMISSIONS_REQUEST_CODE = 1;
@@ -98,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     //视频存储
     MyVideoEncoder mVideoEncoder = null;
     private AtomicBoolean mVideoRecordStarted = new AtomicBoolean(false);
-    private SmatekManager smatekManager;
+
 
 
     @Override
@@ -111,8 +98,12 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     }
 
     private void init() {
+        DoorplateSystemManagerService.smatekManager = (SmatekManager) getSystemService("smatek");
+        Intent intent = new Intent(this, DoorplateSystemManagerService.class);
+        startService(intent);
+
         checkEquipment();
-        smatekManager = (SmatekManager) getSystemService("smatek");
+
         speaker = (Button) findViewById(R.id.speaker);
         button = (Button) findViewById(R.id.button);
         button2 = (Button) findViewById(R.id.button2);
@@ -120,43 +111,36 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         button6 = (Button) findViewById(R.id.button6);
         button3 = (Button) findViewById(R.id.button3);
 
-        mXBanner = findViewById(R.id.banner);
-
-        // 轮播图
-        mBannerController = new BannerController();
-        mBannerController.prepare(findViewById(R.id.banner), 3000);
-//        mBannerController.start();
-
-        // 按钮
-        ButtonComponent buttonComponent = ButtonComponent.getInstance().prepare(this);
-        buttonComponent.setMainButtonCallback(new ButtonComponent.ButtonCallback() {
-            @Override
-            public void onGPIO1() {
-
-            }
-
-            @Override
-            public void onGPIO2() {
-                if (startConnect.get()) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            closeConnect(null);
-                        }
-                    });
-
-                } else {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            startConnect(null);
-                        }
-                    });
-
-                }
-
-            }
-        });
+//        // 按钮
+//        ButtonComponent buttonComponent = ButtonComponent.getInstance().prepare(this);
+//        buttonComponent.setMainButtonCallback(new ButtonComponent.ButtonCallback() {
+//            @Override
+//            public void onGPIO1() {
+//
+//            }
+//
+//            @Override
+//            public void onGPIO2() {
+//                if (startConnect.get()) {
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            closeConnect(null);
+//                        }
+//                    });
+//
+//                } else {
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            startConnect(null);
+//                        }
+//                    });
+//
+//                }
+//
+//            }
+//        });
 
 
         if (mEquipmentNormal.get()) {
@@ -178,6 +162,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
             peerConnectionMap = new HashMap<>();
             iceServers = new ArrayList<>();
             iceServers.add(PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer());
+            iceServers.add(PeerConnection.IceServer.builder("stun:139.224.12.1").createIceServer());
 
             eglBaseContext = EglBase.create().getEglBaseContext();
 
@@ -578,8 +563,6 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         surfaceIndex1 = null;
         surfaceIndex2 = null;
 
-
-        mXBanner.setVisibility(View.VISIBLE);
         startConnect.set(false);
     }
 
@@ -592,8 +575,6 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
             SignalingClient.get().reconnect();
         }
 
-
-        mXBanner.setVisibility(View.INVISIBLE);
         startConnect.set(true);
 
     }

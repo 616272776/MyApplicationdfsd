@@ -126,11 +126,13 @@ public class SignalingClient {
                     }
                 }
             });
-        } catch (NoSuchAlgorithmException e) {
+        }
+        catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (KeyManagementException e) {
             e.printStackTrace();
-        } catch (URISyntaxException e) {
+        }
+        catch (URISyntaxException e) {
             e.printStackTrace();
         }
     }
