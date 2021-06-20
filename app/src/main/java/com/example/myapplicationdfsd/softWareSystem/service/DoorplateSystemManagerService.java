@@ -90,7 +90,7 @@ public class DoorplateSystemManagerService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         if(this.smatekManager==null){
-            throw new IllegalArgumentException("smatekManager is not init");
+            Log.e(TAG,"smatekManager is not init");
         }
 
         Log.e(TAG, "onStartCommand");

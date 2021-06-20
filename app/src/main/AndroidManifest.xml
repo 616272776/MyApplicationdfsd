@@ -30,7 +30,8 @@
         <activity android:name=".activity.PoliceAffairsActivity" android:launchMode="singleInstance"/>
         <activity android:name=".activity.MediaShowActivity" android:launchMode="singleInstance"/>
 
-        <service android:name=".softWareSystem.service.DoorplateSystemManagerService">
+        <service android:name=".softWareSystem.service.DoorplateSystemManagerService"
+            android:permission="android.permission.BIND_JOB_SERVICE">
 
         </service>
     </application>

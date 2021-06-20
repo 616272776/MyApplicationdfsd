@@ -20,6 +20,9 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.example.myapplicationdfsd.softWareSystem.service.DoorplateSystemManagerService;
+import com.example.myapplicationdfsd.softWareSystem.service.media.capture.DoorplateAudioMediaRecord;
+import com.example.myapplicationdfsd.softWareSystem.service.media.capture.MediaRecord;
+import com.example.myapplicationdfsd.softWareSystem.service.media.capture.config.AudioRecordConfig;
 
 import org.json.JSONObject;
 import org.webrtc.AudioSource;
@@ -40,6 +43,7 @@ import org.webrtc.VideoCapturer;
 import org.webrtc.VideoFrame;
 import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
+import org.webrtc.audio.JavaAudioDeviceModule;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -98,9 +102,26 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     }
 
     private void init() {
+        //门牌管理设备
         DoorplateSystemManagerService.smatekManager = (SmatekManager) getSystemService("smatek");
         Intent intent = new Intent(this, DoorplateSystemManagerService.class);
         startService(intent);
+
+        // todo 门牌音频编码测试
+        DoorplateAudioMediaRecord doorplateAudioMediaRecord = DoorplateAudioMediaRecord.getInstance();
+        doorplateAudioMediaRecord.init(
+                new AudioRecordConfig(8192,
+                        882,
+                        MediaRecorder.AudioSource.VOICE_COMMUNICATION,
+                        new AudioFormat.Builder()
+                        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                        .setSampleRate(44100)
+                        .setChannelMask(AudioFormat.CHANNEL_IN_FRONT)
+                        .build()),
+                        JavaAudioDeviceModule.MyAudioInput);
+        
+        doorplateAudioMediaRecord.record();
+
 
         checkEquipment();
 
@@ -230,7 +251,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
             mediaStream.addTrack(videoTrack);
             mediaStream.addTrack(audioTrack);
         }
-        function(null);
+//        function(null);
     }
 
     private void checkEquipment() {
