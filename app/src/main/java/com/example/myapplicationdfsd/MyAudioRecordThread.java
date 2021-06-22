@@ -4,6 +4,8 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 
+import com.example.myapplicationdfsd.softWareSystem.service.media.data.AudioData;
+
 import org.webrtc.audio.JavaAudioDeviceModule;
 import org.webrtc.audio.WebRtcAudioRecord;
 
@@ -46,7 +48,7 @@ public class MyAudioRecordThread implements Runnable{
                 cpBuffer.rewind();
                 cpBuffer.limit(bytesRead);
                 AudioData audioData = new AudioData(cpBuffer, System.nanoTime() / 1000L
-                        , bytesRead, 1);
+                        , bytesRead);
                 cpBuffer.clear();
                 callback.recording(audioData);
             }

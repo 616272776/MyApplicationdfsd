@@ -1,6 +1,5 @@
 package com.example.myapplicationdfsd;
 
-import android.hardware.display.DisplayManager;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
@@ -10,6 +9,8 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.text.TextUtils;
 import android.util.Log;
+
+import com.example.myapplicationdfsd.softWareSystem.service.media.data.AudioData;
 
 import org.webrtc.Logging;
 import org.webrtc.VideoFrame;
@@ -117,7 +118,7 @@ public class MyVideoEncoder {
                     cpBuffer.rewind();
                     cpBuffer.limit(bufferSize);
                     AudioData audioData = new AudioData(cpBuffer, System.nanoTime() / 1000L
-                            , bufferSize, 1);
+                            , bufferSize);
                     mAudioOutBufferQueue.offer(audioData);
                     cpBuffer.clear();
                 }

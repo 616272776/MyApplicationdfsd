@@ -1,13 +1,10 @@
-package com.example.myapplicationdfsd.softWareSystem.service.media.capture;
+package com.example.myapplicationdfsd.softWareSystem.service.media.record;
 
-import com.example.myapplicationdfsd.softWareSystem.service.media.MediaData;
-import com.example.myapplicationdfsd.softWareSystem.service.media.capture.config.AudioRecordConfig;
+import com.example.myapplicationdfsd.softWareSystem.service.media.data.MediaData;
 
 import org.webrtc.audio.WebRtcAudioRecord;
 
-import androidx.annotation.NonNull;
-
-public class DoorplateAudioMediaRecord extends AudioMediaRecord {
+public class DoorplateAudioMediaRecord extends AbstractAudioMediaRecord {
 
     private WebRtcAudioRecord webRtcAudioRecord;
     private static DoorplateAudioMediaRecord mInstance;
@@ -23,12 +20,11 @@ public class DoorplateAudioMediaRecord extends AudioMediaRecord {
     }
 
 
-    public void init(AudioRecordConfig audioRecordConfig,WebRtcAudioRecord webRtcAudioRecord) {
-        super.init(audioRecordConfig);
-        this.webRtcAudioRecord = webRtcAudioRecord;
-        webRtcAudioRecord.byteBuffer = byteBuffer;
-        webRtcAudioRecord.audioRecord= audioRecord;
-        Thread thread = new Thread(new Runnable() {
+    @Override
+    public void init(MediaRecordCallBack mediaRecordCallBack) {
+        super.init(mediaRecordCallBack);
+
+        this.mMediaRecordingThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 while (isRecording.get()) {
@@ -46,19 +42,11 @@ public class DoorplateAudioMediaRecord extends AudioMediaRecord {
                 }
             }
         });
-        config(thread);
     }
 
-
-
-
-    @Override
-    public void stop() {
-        super.stop();
-    }
-
-    @Override
-    public void release() {
-        super.release();
+    public void configWebRtcAudioRecord (WebRtcAudioRecord MyAudioInput){
+        this.webRtcAudioRecord = webRtcAudioRecord;
+        webRtcAudioRecord.byteBuffer = byteBuffer;
+        webRtcAudioRecord.audioRecord= audioRecord;
     }
 }

@@ -1,4 +1,4 @@
-package com.example.myapplicationdfsd.softWareSystem.service.media.capture.config;
+package com.example.myapplicationdfsd.softWareSystem.service.media.record;
 
 import android.media.AudioFormat;
 

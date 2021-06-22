@@ -5,9 +5,7 @@ import android.app.SmatekManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.media.AudioFormat;
 import android.media.AudioManager;
-import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -20,9 +18,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.example.myapplicationdfsd.softWareSystem.service.DoorplateSystemManagerService;
-import com.example.myapplicationdfsd.softWareSystem.service.media.capture.DoorplateAudioMediaRecord;
-import com.example.myapplicationdfsd.softWareSystem.service.media.capture.MediaRecord;
-import com.example.myapplicationdfsd.softWareSystem.service.media.capture.config.AudioRecordConfig;
+import com.example.myapplicationdfsd.softWareSystem.service.MediaService;
 
 import org.json.JSONObject;
 import org.webrtc.AudioSource;
@@ -43,7 +39,6 @@ import org.webrtc.VideoCapturer;
 import org.webrtc.VideoFrame;
 import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
-import org.webrtc.audio.JavaAudioDeviceModule;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -88,8 +83,8 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
 
     //视频存储
     MyVideoEncoder mVideoEncoder = null;
-    private AtomicBoolean mVideoRecordStarted = new AtomicBoolean(false);
-
+    public static AtomicBoolean mVideoRecordStarted = new AtomicBoolean(false);
+    public static VideoSource videoSource;
 
 
     @Override
@@ -107,20 +102,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         Intent intent = new Intent(this, DoorplateSystemManagerService.class);
         startService(intent);
 
-        // todo 门牌音频编码测试
-        DoorplateAudioMediaRecord doorplateAudioMediaRecord = DoorplateAudioMediaRecord.getInstance();
-        doorplateAudioMediaRecord.init(
-                new AudioRecordConfig(8192,
-                        882,
-                        MediaRecorder.AudioSource.VOICE_COMMUNICATION,
-                        new AudioFormat.Builder()
-                        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                        .setSampleRate(44100)
-                        .setChannelMask(AudioFormat.CHANNEL_IN_FRONT)
-                        .build()),
-                        JavaAudioDeviceModule.MyAudioInput);
-        
-        doorplateAudioMediaRecord.record();
+
 
 
         checkEquipment();
@@ -166,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
 
         if (mEquipmentNormal.get()) {
 
-            //视频存储
+//            //视频存储
             if (mVideoEncoder == null) {
                 mVideoEncoder = new MyVideoEncoder();
                 mVideoEncoder.init("/sdcard/test_out.mp4", 640, 480);
@@ -205,16 +187,16 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
             SurfaceTextureHelper surfaceTextureHelper = SurfaceTextureHelper.create("CaptureThread", eglBaseContext);
             // create VideoCapturer
             VideoCapturer videoCapturer = createCameraCapturer(true);
-            VideoSource videoSource = peerConnectionFactory.createVideoSource(videoCapturer.isScreencast());
+            videoSource = peerConnectionFactory.createVideoSource(videoCapturer.isScreencast());
 
-            videoSource.setVideoSourceCallback(new VideoSource.VideoSourceCallback() {
-                @Override
-                public void onFrameCaptured(VideoFrame videoFrame) {
-                    if (mVideoRecordStarted.get()) {
-                        mVideoEncoder.encode(videoFrame);
-                    }
-                }
-            });
+//            videoSource.setVideoSourceCallback(new VideoSource.VideoSourceCallback() {
+//                @Override
+//                public void onFrameCaptured(VideoFrame videoFrame) {
+//                    if (mVideoRecordStarted.get()) {
+//                        mVideoEncoder.encode(videoFrame);
+//                    }
+//                }
+//            });
 
 
             videoCapturer.initialize(surfaceTextureHelper, getApplicationContext(), videoSource.getCapturerObserver());
@@ -251,7 +233,11 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
             mediaStream.addTrack(videoTrack);
             mediaStream.addTrack(audioTrack);
         }
+
 //        function(null);
+
+        Intent mediaServiceIntent = new Intent(this, MediaService.class);
+        startService(mediaServiceIntent);
     }
 
     private void checkEquipment() {
@@ -600,51 +586,51 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
 
     }
 
-    // 音频源：音频输入-麦克风
-    private final static int AUDIO_INPUT = MediaRecorder.AudioSource.MIC;
+//    // 音频源：音频输入-麦克风
+//    private final static int AUDIO_INPUT = MediaRecorder.AudioSource.MIC;
+//
+//    // 采样率
+//    // 44100是目前的标准，但是某些设备仍然支持22050，16000，11025
+//    // 采样频率一般共分为22.05KHz、44.1KHz、48KHz三个等级
+//    private final static int AUDIO_SAMPLE_RATE = 44100;
+//
+//    // 音频通道 单声道
+//    private final static int AUDIO_CHANNEL = AudioFormat.CHANNEL_IN_MONO;
+//
+//    // 音频格式：PCM编码
+//    private final static int AUDIO_ENCODING = AudioFormat.ENCODING_PCM_16BIT;
+//
+//    private byte[] buffer;
+//    private boolean isRecording;
 
-    // 采样率
-    // 44100是目前的标准，但是某些设备仍然支持22050，16000，11025
-    // 采样频率一般共分为22.05KHz、44.1KHz、48KHz三个等级
-    private final static int AUDIO_SAMPLE_RATE = 44100;
-
-    // 音频通道 单声道
-    private final static int AUDIO_CHANNEL = AudioFormat.CHANNEL_IN_MONO;
-
-    // 音频格式：PCM编码
-    private final static int AUDIO_ENCODING = AudioFormat.ENCODING_PCM_16BIT;
-
-    private byte[] buffer;
-    private boolean isRecording;
 
 
-
-    public void function(View view) {
-        MyAudioRecordThread myAudioRecordThread = new MyAudioRecordThread(new MyAudioRecordThread.Callback() {
-            @Override
-            public void inited() {
-
-            }
-
-            @Override
-            public void recording(AudioData audioData) {
-if(mVideoRecordStarted.get() && !MyVideoEncoder.mAudioThreadCancel.get()){
-    MyVideoEncoder.mAudioOutBufferQueue.offer(audioData);
-}
-            }
-
-            @Override
-            public void stop() {
-
-            }
-
-            @Override
-            public void release() {
-
-            }
-        });
-        myAudioRecordThread.init();
-        Thread thread = new Thread(myAudioRecordThread);
-        thread.start();
-    }
+//    public void function(View view) {
+//        MyAudioRecordThread myAudioRecordThread = new MyAudioRecordThread(new MyAudioRecordThread.Callback() {
+//            @Override
+//            public void inited() {
+//
+//            }
+//
+//            @Override
+//            public void recording(AudioData audioData) {
+//if(mVideoRecordStarted.get() && !MyVideoEncoder.mAudioThreadCancel.get()){
+//    MyVideoEncoder.mAudioOutBufferQueue.offer(audioData);
+//}
+//            }
+//
+//            @Override
+//            public void stop() {
+//
+//            }
+//
+//            @Override
+//            public void release() {
+//
+//            }
+//        });
+//        myAudioRecordThread.init();
+//        Thread thread = new Thread(myAudioRecordThread);
+//        thread.start();
+//    }
 }
