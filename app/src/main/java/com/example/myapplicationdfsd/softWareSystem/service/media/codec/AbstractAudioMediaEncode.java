@@ -11,16 +11,17 @@ public abstract class AbstractAudioMediaEncode extends AbstractMediaCodec {
     private static final String AUDIO_MIME_TYPE = MediaFormat.MIMETYPE_AUDIO_AAC;
     private AudioMediaEncodeConfig audioMediaEncodeConfig;
 
+
     @Override
     public void init() {
         super.init();
         try {
-            MediaFormat audioFormat = MediaFormat.createAudioFormat(AUDIO_MIME_TYPE, audioMediaEncodeConfig.getmAudioSampleRate(), audioMediaEncodeConfig.getmAudioChannels());
-            audioFormat.setInteger(MediaFormat.KEY_AAC_PROFILE, MediaCodecInfo.CodecProfileLevel.AACObjectLC);
-            audioFormat.setInteger(MediaFormat.KEY_BIT_RATE, audioMediaEncodeConfig.getmAudioBitsPerSample() * audioMediaEncodeConfig.getmAudioSampleRate() * 4);
-            audioFormat.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, audioMediaEncodeConfig.getmAudioBufferSize());
+            mediaFormat = MediaFormat.createAudioFormat(AUDIO_MIME_TYPE, audioMediaEncodeConfig.getmAudioSampleRate(), audioMediaEncodeConfig.getmAudioChannels());
+            mediaFormat.setInteger(MediaFormat.KEY_AAC_PROFILE, MediaCodecInfo.CodecProfileLevel.AACObjectLC);
+            mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, audioMediaEncodeConfig.getmAudioBitsPerSample() * audioMediaEncodeConfig.getmAudioSampleRate() * 4);
+            mediaFormat.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, audioMediaEncodeConfig.getmAudioBufferSize());
             mediaCodec = MediaCodec.createEncoderByType(AUDIO_MIME_TYPE);
-            mediaCodec.configure(audioFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
+            mediaCodec.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -1,6 +1,7 @@
 package com.example.myapplicationdfsd.softWareSystem.service.media.codec;
 
 import android.media.MediaCodec;
+import android.media.MediaFormat;
 
 import com.example.myapplicationdfsd.softWareSystem.service.media.data.MediaData;
 import com.example.myapplicationdfsd.softWareSystem.service.media.data.MediaDataQueue;
@@ -17,6 +18,8 @@ public abstract class  AbstractMediaCodec {
 
     protected MediaDataQueue<MediaData> mediaRecordDataQueue;
     protected MediaDataQueue<MediaData> mediaEncodeDataQueue;
+
+    protected MediaFormat mediaFormat;
 
     public void init(){
         if(mediaRecordDataQueue == null || mediaEncodeDataQueue == null){

@@ -54,11 +54,11 @@ public class DoorplateVideoMediaEncode extends AbstractVideoMediaEncode {
         if (mediaEncodeQueueThreadIsRunning.get()) {
             mNanoTime = System.nanoTime();
             if (mediaCodec == null) {
-                Log.e(TAG, "mEncoder or mMediaMuxer is null");
+                Log.e(TAG, "mEncoder is null");
                 return;
             }
             int inputBufferIndex = mediaCodec.dequeueInputBuffer(DEQUEUE_TIME_OUT);
-            Log.d(TAG, "inputBufferIndex: " + inputBufferIndex);
+//            Log.d(TAG, "inputBufferIndex: " + inputBufferIndex);
             if (inputBufferIndex == -1) {
                 Log.e(TAG, "no valid buffer available");
                 return;
@@ -76,13 +76,13 @@ public class DoorplateVideoMediaEncode extends AbstractVideoMediaEncode {
     public void dequeue() {
         MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
         int outputBufferIndex = mediaCodec.dequeueOutputBuffer(bufferInfo, DEQUEUE_TIME_OUT);
-        Log.d(TAG, "outputBufferIndex: " + outputBufferIndex);
+//        Log.d(TAG, "outputBufferIndex: " + outputBufferIndex);
         if (outputBufferIndex >= 0) {
             ByteBuffer outputBuffer = mediaCodec.getOutputBuffer(outputBufferIndex);
             if ((bufferInfo.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) == 0) {
-                Log.d(TAG, "write outputBuffer");
+//                Log.d(TAG, "write outputBuffer");
 //                mMediaMuxer.writeSampleData(mVideoTrackIndex, outputBuffer, bufferInfo);
-                mediaEncodeDataQueue.offer(new MediaEncodeData(bufferInfo,outputBuffer));
+                mediaEncodeDataQueue.offer(new MediaEncodeData(bufferInfo,outputBuffer,null));
             }
             mediaCodec.releaseOutputBuffer(outputBufferIndex, false);
 
@@ -98,7 +98,8 @@ public class DoorplateVideoMediaEncode extends AbstractVideoMediaEncode {
 //            if (mMuxerStarted.get()) {
 //                throw new IllegalStateException("output format already changed!");
 //            }
-//            MediaFormat newFormat = mediaCodec.getOutputFormat();
+            mediaFormat = mediaCodec.getOutputFormat();
+            mediaEncodeDataQueue.offer(new MediaEncodeData(null,null,mediaFormat));
 //            mVideoTrackIndex = mMediaMuxer.addTrack(newFormat);
 //            synchronized (mLock) {
 //                if (mVideoTrackIndex >= 0 && mVideoTrackIndex >= 0) {

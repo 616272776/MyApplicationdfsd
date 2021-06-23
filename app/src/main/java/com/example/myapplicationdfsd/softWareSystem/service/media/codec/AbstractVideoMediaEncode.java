@@ -16,7 +16,7 @@ public abstract class AbstractVideoMediaEncode extends AbstractMediaCodec {
         super.init();
         try {
         // 视频格式信息
-        MediaFormat mediaFormat = MediaFormat.createVideoFormat(VIDEO_MIME_TYPE, videoMediaEncodeConfig.width, videoMediaEncodeConfig.height);
+         mediaFormat = MediaFormat.createVideoFormat(VIDEO_MIME_TYPE, videoMediaEncodeConfig.width, videoMediaEncodeConfig.height);
         mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible);
         mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, videoMediaEncodeConfig.width * videoMediaEncodeConfig.height * 6);
         mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 30);

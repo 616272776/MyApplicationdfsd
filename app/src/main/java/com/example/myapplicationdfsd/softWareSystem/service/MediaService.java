@@ -4,10 +4,12 @@ import android.app.Service;
 import android.content.Intent;
 import android.media.AudioFormat;
 import android.media.MediaRecorder;
+import android.os.Binder;
 import android.os.IBinder;
 
 import androidx.annotation.Nullable;
 
+import com.example.myapplicationdfsd.hardWareSystem.memory.InternalMemory;
 import com.example.myapplicationdfsd.softWareSystem.service.media.codec.AudioMediaEncodeConfig;
 import com.example.myapplicationdfsd.softWareSystem.service.media.codec.DoorplateAudioMediaEncode;
 import com.example.myapplicationdfsd.softWareSystem.service.media.codec.DoorplateVideoMediaEncode;
@@ -18,6 +20,7 @@ import com.example.myapplicationdfsd.MyVideoEncoder;
 import com.example.myapplicationdfsd.softWareSystem.service.media.data.MediaDataQueue;
 import com.example.myapplicationdfsd.softWareSystem.service.media.data.MediaData;
 import com.example.myapplicationdfsd.softWareSystem.service.media.data.VideoData;
+import com.example.myapplicationdfsd.softWareSystem.service.media.muxer.DoorplateMediaMuxer;
 import com.example.myapplicationdfsd.softWareSystem.service.media.record.DoorplateAudioMediaRecord;
 import com.example.myapplicationdfsd.softWareSystem.service.media.record.MediaRecordCallBack;
 import com.example.myapplicationdfsd.softWareSystem.service.media.record.AudioRecordConfig;
@@ -44,17 +47,19 @@ public class MediaService extends Service {
 
     private MediaDataQueue<MediaData> mVideoMediaRecordDataQueue;
     private MediaDataQueue<MediaData> mVideoMediaEncodeDataQueue;
+
+    private DoorplateMediaMuxer doorplateMediaMuxer;
 //    private MediaDataQueue<> mVideoMediaEncodeDataQueue;
 
 
-//    public class MyBinder extends Binder{
-//        public DoorplateSystemManagerService getService(){
-//            return DoorplateSystemManagerService.this;
-//        }
-//    }
+    public class MyBinder extends Binder {
+        public MediaService getService(){
+            return MediaService.this;
+        }
+    }
 
 
-//    private MyBinder binder = new MyBinder();
+    private MyBinder binder = new MyBinder();
 
     @Override
     public void onCreate() {
@@ -65,6 +70,8 @@ public class MediaService extends Service {
 
         mVideoMediaRecordDataQueue = new MediaDataQueue<>();
         mVideoMediaEncodeDataQueue = new MediaDataQueue<>();
+
+
 
         // todo 门牌音频获取测试
         doorplateAudioMediaRecord = DoorplateAudioMediaRecord.getInstance();
@@ -115,14 +122,20 @@ public class MediaService extends Service {
         doorplateVideoMediaEncode.init();
         doorplateVideoMediaEncode.start();
 
+        doorplateMediaMuxer = new DoorplateMediaMuxer();
+        doorplateMediaMuxer.init(InternalMemory.getMemoryPath("test1.mp4"));
+        doorplateMediaMuxer.setVideoMediaEncodeDataQueue(mVideoMediaEncodeDataQueue);
+        doorplateMediaMuxer.setAudioMediaEncodeDataQueue(mAudioMediaEncodeDataQueue);
+        doorplateMediaMuxer.start();
+
+
 
     }
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-//        return binder;
-        return null;
+        return binder;
     }
 
     @Override
@@ -146,5 +159,9 @@ public class MediaService extends Service {
             doorplateAudioMediaEncode.release();
         }
 
+    }
+
+    public void stop(){
+        doorplateMediaMuxer.release();
     }
 }

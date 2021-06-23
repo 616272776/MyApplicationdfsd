@@ -1,6 +1,7 @@
 package com.example.myapplicationdfsd.softWareSystem.service.media.codec;
 
 import android.media.MediaCodec;
+import android.media.MediaFormat;
 
 import com.example.myapplicationdfsd.softWareSystem.service.media.data.AudioData;
 import com.example.myapplicationdfsd.softWareSystem.service.media.data.MediaEncodeData;
@@ -73,7 +74,8 @@ public class DoorplateAudioMediaEncode extends AbstractAudioMediaEncode {
 //            if (mMuxerStarted.get()) {
 //                throw new IllegalStateException("output format already changed!");
 //            }
-//            MediaFormat newFormat = mAudioCodec.getOutputFormat();
+            mediaFormat= mediaCodec.getOutputFormat();
+            mediaEncodeDataQueue.offer(new MediaEncodeData(null,null,mediaFormat));
 //            mAudioTrackIndex = mMediaMuxer.addTrack(newFormat);
 //            synchronized (mLock) {
 //                if (mAudioTrackIndex >= 0 && mVideoTrackIndex >= 0) {
@@ -114,7 +116,7 @@ public class DoorplateAudioMediaEncode extends AbstractAudioMediaEncode {
                     && mLastAudioPresentationTimeUs < audioBufferInfo.presentationTimeUs) {
 //                mMediaMuxer.writeSampleData(mAudioTrackIndex, encodedData, audioBufferInfo);
                 mLastAudioPresentationTimeUs = audioBufferInfo.presentationTimeUs;
-                mediaEncodeDataQueue.offer(new MediaEncodeData(audioBufferInfo,encodedData));
+                mediaEncodeDataQueue.offer(new MediaEncodeData(audioBufferInfo,encodedData,null));
             }
             mediaCodec.releaseOutputBuffer(outIndex, false);
 //

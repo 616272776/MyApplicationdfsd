@@ -1,16 +1,19 @@
 package com.example.myapplicationdfsd.softWareSystem.service.media.data;
 
 import android.media.MediaCodec;
+import android.media.MediaFormat;
 
 import java.nio.ByteBuffer;
 
 public class MediaEncodeData implements MediaData{
     private MediaCodec.BufferInfo BufferInfo;
     private ByteBuffer encodedData;
+    private MediaFormat mediaFormat;
 
-    public MediaEncodeData(MediaCodec.BufferInfo BufferInfo, ByteBuffer encodedData) {
+    public MediaEncodeData(MediaCodec.BufferInfo BufferInfo, ByteBuffer encodedData,MediaFormat mediaFormat) {
         this.BufferInfo = BufferInfo;
         this.encodedData = encodedData;
+        this.mediaFormat = mediaFormat;
     }
 
     public MediaCodec.BufferInfo getBufferInfo() {
@@ -19,5 +22,9 @@ public class MediaEncodeData implements MediaData{
 
     public ByteBuffer getEncodedData() {
         return encodedData;
+    }
+
+    public MediaFormat getMediaFormat() {
+        return mediaFormat;
     }
 }

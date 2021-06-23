@@ -2,12 +2,15 @@ package com.example.myapplicationdfsd;
 
 import android.Manifest;
 import android.app.SmatekManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -75,6 +78,22 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     private AtomicBoolean mEquipmentNormal = new AtomicBoolean(false);
     public static AtomicBoolean startConnect = new AtomicBoolean(false);
 
+    private MediaService mService;
+    private ServiceConnection mConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            MediaService.MyBinder binder = (MediaService.MyBinder) service;
+             mService = binder.getService();
+
+        }
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+
+        }
+    };
+
 
     //权限
     private final static int PERMISSIONS_REQUEST_CODE = 1;
@@ -85,6 +104,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     MyVideoEncoder mVideoEncoder = null;
     public static AtomicBoolean mVideoRecordStarted = new AtomicBoolean(false);
     public static VideoSource videoSource;
+
 
 
     @Override
@@ -148,11 +168,11 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
 
         if (mEquipmentNormal.get()) {
 
-//            //视频存储
-            if (mVideoEncoder == null) {
-                mVideoEncoder = new MyVideoEncoder();
-                mVideoEncoder.init("/sdcard/test_out.mp4", 640, 480);
-            }
+////            //视频存储
+//            if (mVideoEncoder == null) {
+//                mVideoEncoder = new MyVideoEncoder();
+//                mVideoEncoder.init("/sdcard/test_out.mp4", 640, 480);
+//            }
 
 
             AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
@@ -237,7 +257,8 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
 //        function(null);
 
         Intent mediaServiceIntent = new Intent(this, MediaService.class);
-        startService(mediaServiceIntent);
+        bindService(mediaServiceIntent,mConnection,Context.BIND_AUTO_CREATE);
+//        startService(mediaServiceIntent);
     }
 
     private void checkEquipment() {
@@ -543,11 +564,12 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     }
 
     public void stopRecord(View view) {
-        if (mVideoEncoder != null) {
-            mVideoEncoder.release();
-        }
-        mVideoRecordStarted.set(false);
-        Toast.makeText(this, "停止录制", Toast.LENGTH_SHORT).show();
+//        if (mVideoEncoder != null) {
+//            mVideoEncoder.release();
+//        }
+//        mVideoRecordStarted.set(false);
+//        Toast.makeText(this, "停止录制", Toast.LENGTH_SHORT).show();
+        mService.stop();
     }
 
     public void startRecord(View view) {
