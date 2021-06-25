@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MyAudioRecordThread implements Runnable{
     private String TAG = "AudioRecordThread";
-    private WebRtcAudioRecord webRtcAudioRecord;
+    public static WebRtcAudioRecord webRtcAudioRecord;
 
     // 音频源：音频输入-麦克风
     private final static int AUDIO_INPUT = MediaRecorder.AudioSource.MIC;
@@ -54,10 +54,10 @@ public class MyAudioRecordThread implements Runnable{
             }
             if(webRtcAudioRecord.keepAlive){
                 if (bytesRead == byteBuffer.capacity()) {
-                    if (webRtcAudioRecord.microphoneMute) {
-                        byteBuffer.clear();
-                        byteBuffer.put(webRtcAudioRecord.emptyBytes);
-                    }
+//                    if (webRtcAudioRecord.microphoneMute) {
+//                        byteBuffer.clear();
+//                        byteBuffer.put(webRtcAudioRecord.emptyBytes);
+//                    }
                     // It's possible we've been shut down during the read, and stopRecording() tried and
                     // failed to join this thread. To be a bit safer, try to avoid calling any native methods
                     // in case they've been unregistered after stopRecording() returned.

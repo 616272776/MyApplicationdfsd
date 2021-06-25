@@ -1,6 +1,7 @@
 package com.example.myapplicationdfsd;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.SmatekManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -116,14 +117,12 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         }
     }
 
+    @SuppressLint("WrongConstant")
     private void init() {
         //门牌管理设备
         DoorplateSystemManagerService.smatekManager = (SmatekManager) getSystemService("smatek");
         Intent intent = new Intent(this, DoorplateSystemManagerService.class);
         startService(intent);
-
-
-
 
         checkEquipment();
 
@@ -134,45 +133,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         button6 = (Button) findViewById(R.id.button6);
         button3 = (Button) findViewById(R.id.button3);
 
-//        // 按钮
-//        ButtonComponent buttonComponent = ButtonComponent.getInstance().prepare(this);
-//        buttonComponent.setMainButtonCallback(new ButtonComponent.ButtonCallback() {
-//            @Override
-//            public void onGPIO1() {
-//
-//            }
-//
-//            @Override
-//            public void onGPIO2() {
-//                if (startConnect.get()) {
-//                    runOnUiThread(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            closeConnect(null);
-//                        }
-//                    });
-//
-//                } else {
-//                    runOnUiThread(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            startConnect(null);
-//                        }
-//                    });
-//
-//                }
-//
-//            }
-//        });
 
-
-        if (mEquipmentNormal.get()) {
-
-////            //视频存储
-//            if (mVideoEncoder == null) {
-//                mVideoEncoder = new MyVideoEncoder();
-//                mVideoEncoder.init("/sdcard/test_out.mp4", 640, 480);
-//            }
 
 
             AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
@@ -209,16 +170,6 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
             VideoCapturer videoCapturer = createCameraCapturer(true);
             videoSource = peerConnectionFactory.createVideoSource(videoCapturer.isScreencast());
 
-//            videoSource.setVideoSourceCallback(new VideoSource.VideoSourceCallback() {
-//                @Override
-//                public void onFrameCaptured(VideoFrame videoFrame) {
-//                    if (mVideoRecordStarted.get()) {
-//                        mVideoEncoder.encode(videoFrame);
-//                    }
-//                }
-//            });
-
-
             videoCapturer.initialize(surfaceTextureHelper, getApplicationContext(), videoSource.getCapturerObserver());
             videoCapturer.startCapture(640, 480, 30);
 
@@ -252,9 +203,10 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
             mediaStream = peerConnectionFactory.createLocalMediaStream("mediaStream");
             mediaStream.addTrack(videoTrack);
             mediaStream.addTrack(audioTrack);
-        }
+
 
 //        function(null);
+        startConnect(null);
 
         Intent mediaServiceIntent = new Intent(this, MediaService.class);
         bindService(mediaServiceIntent,mConnection,Context.BIND_AUTO_CREATE);
@@ -607,52 +559,4 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         startConnect.set(true);
 
     }
-
-//    // 音频源：音频输入-麦克风
-//    private final static int AUDIO_INPUT = MediaRecorder.AudioSource.MIC;
-//
-//    // 采样率
-//    // 44100是目前的标准，但是某些设备仍然支持22050，16000，11025
-//    // 采样频率一般共分为22.05KHz、44.1KHz、48KHz三个等级
-//    private final static int AUDIO_SAMPLE_RATE = 44100;
-//
-//    // 音频通道 单声道
-//    private final static int AUDIO_CHANNEL = AudioFormat.CHANNEL_IN_MONO;
-//
-//    // 音频格式：PCM编码
-//    private final static int AUDIO_ENCODING = AudioFormat.ENCODING_PCM_16BIT;
-//
-//    private byte[] buffer;
-//    private boolean isRecording;
-
-
-
-//    public void function(View view) {
-//        MyAudioRecordThread myAudioRecordThread = new MyAudioRecordThread(new MyAudioRecordThread.Callback() {
-//            @Override
-//            public void inited() {
-//
-//            }
-//
-//            @Override
-//            public void recording(AudioData audioData) {
-//if(mVideoRecordStarted.get() && !MyVideoEncoder.mAudioThreadCancel.get()){
-//    MyVideoEncoder.mAudioOutBufferQueue.offer(audioData);
-//}
-//            }
-//
-//            @Override
-//            public void stop() {
-//
-//            }
-//
-//            @Override
-//            public void release() {
-//
-//            }
-//        });
-//        myAudioRecordThread.init();
-//        Thread thread = new Thread(myAudioRecordThread);
-//        thread.start();
-//    }
 }

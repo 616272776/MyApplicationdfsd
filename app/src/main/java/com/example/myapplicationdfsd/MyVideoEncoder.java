@@ -89,46 +89,46 @@ public class MyVideoEncoder {
         mAudioOutBufferQueue = new LinkedBlockingQueue<AudioData>(QUEUE_MAX_COUNT);
 
 
-        WebRtcAudioRecord.setWebRtcAudioRecordCallback(new WebRtcAudioRecord.WebRtcAudioRecordCallback() {
-            @Override
-            public void onWebRtcAudioRecordInit(int audioSource, int audioFormat, int sampleRate,
-                                                int channels, int bitPerSample, int bufferPerSecond, int bufferSizeInBytes) {
-//                44100，1，16，8192
-//                    mAudioSource = audioSource;
-//                    mAudioFormat = audioFormat;
-                mAudioSampleRate = sampleRate;
-                mAudioChannels = channels;
-                mAudioBitsPerSample = bitPerSample;
-//                    mAudioBuffersPerSecond = bufferPerSecond;
-                mAudioBufferSize = bufferSizeInBytes;
-//                mAudioOutBufferQueue = new LinkedBlockingQueue<AudioData>(QUEUE_MAX_COUNT);
-            }
-
-            @Override
-            public void onWebRtcAudioRecordStart() {
-
-            }
-
-            @Override
-            public void onWebRtcAudioRecording(ByteBuffer buffer, int bufferSize, boolean microphoneMute) {
-                if (mVideoRecordStarted.get()) {
-                    final ByteBuffer cpBuffer = ByteBuffer.allocateDirect(bufferSize);
-                    cpBuffer.order(buffer.order());
-                    cpBuffer.put(buffer.array(), buffer.arrayOffset(), bufferSize);
-                    cpBuffer.rewind();
-                    cpBuffer.limit(bufferSize);
-                    AudioData audioData = new AudioData(cpBuffer, System.nanoTime() / 1000L
-                            , bufferSize);
-                    mAudioOutBufferQueue.offer(audioData);
-                    cpBuffer.clear();
-                }
-            }
-
-            @Override
-            public void onWebRtcAudioRecordStop() {
-
-            }
-        });
+//        WebRtcAudioRecord.setWebRtcAudioRecordCallback(new WebRtcAudioRecord.WebRtcAudioRecordCallback() {
+//            @Override
+//            public void onWebRtcAudioRecordInit(int audioSource, int audioFormat, int sampleRate,
+//                                                int channels, int bitPerSample, int bufferPerSecond, int bufferSizeInBytes) {
+////                44100，1，16，8192
+////                    mAudioSource = audioSource;
+////                    mAudioFormat = audioFormat;
+//                mAudioSampleRate = sampleRate;
+//                mAudioChannels = channels;
+//                mAudioBitsPerSample = bitPerSample;
+////                    mAudioBuffersPerSecond = bufferPerSecond;
+//                mAudioBufferSize = bufferSizeInBytes;
+////                mAudioOutBufferQueue = new LinkedBlockingQueue<AudioData>(QUEUE_MAX_COUNT);
+//            }
+//
+//            @Override
+//            public void onWebRtcAudioRecordStart() {
+//
+//            }
+//
+//            @Override
+//            public void onWebRtcAudioRecording(ByteBuffer buffer, int bufferSize, boolean microphoneMute) {
+//                if (mVideoRecordStarted.get()) {
+//                    final ByteBuffer cpBuffer = ByteBuffer.allocateDirect(bufferSize);
+//                    cpBuffer.order(buffer.order());
+//                    cpBuffer.put(buffer.array(), buffer.arrayOffset(), bufferSize);
+//                    cpBuffer.rewind();
+//                    cpBuffer.limit(bufferSize);
+//                    AudioData audioData = new AudioData(cpBuffer, System.nanoTime() / 1000L
+//                            , bufferSize);
+//                    mAudioOutBufferQueue.offer(audioData);
+//                    cpBuffer.clear();
+//                }
+//            }
+//
+//            @Override
+//            public void onWebRtcAudioRecordStop() {
+//
+//            }
+//        });
     }
 
     public void prepareEncoder() {

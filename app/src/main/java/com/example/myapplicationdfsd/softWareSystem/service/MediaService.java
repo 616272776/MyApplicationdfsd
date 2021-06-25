@@ -28,6 +28,7 @@ import com.example.myapplicationdfsd.softWareSystem.service.media.record.AudioRe
 import org.webrtc.VideoFrame;
 import org.webrtc.VideoSource;
 import org.webrtc.audio.JavaAudioDeviceModule;
+import org.webrtc.audio.WebRtcAudioRecord;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -71,20 +72,24 @@ public class MediaService extends Service {
         mVideoMediaRecordDataQueue = new MediaDataQueue<>();
         mVideoMediaEncodeDataQueue = new MediaDataQueue<>();
 
+        AudioFormat audioFormat = new AudioFormat.Builder()
+                .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                .setSampleRate(44100)
+                .setChannelMask(AudioFormat.CHANNEL_IN_DEFAULT)
+                .build();
+
+        int bytesPerFrame = audioFormat.getChannelMask() * WebRtcAudioRecord.getBytesPerSample(audioFormat.getEncoding());
+        int framesPerBuffer = audioFormat.getSampleRate() / WebRtcAudioRecord.BUFFERS_PER_SECOND;
+
+        AudioRecordConfig audioRecordConfig = new AudioRecordConfig(8192,
+                bytesPerFrame * framesPerBuffer,
+                MediaRecorder.AudioSource.VOICE_COMMUNICATION, audioFormat        );
 
 
         // todo 门牌音频获取测试
         doorplateAudioMediaRecord = DoorplateAudioMediaRecord.getInstance();
         doorplateAudioMediaRecord.configWebRtcAudioRecord(JavaAudioDeviceModule.MyAudioInput);
-        doorplateAudioMediaRecord.configAudioRecordConfig(
-                new AudioRecordConfig(8192,
-                        882,
-                        MediaRecorder.AudioSource.VOICE_COMMUNICATION,
-                        new AudioFormat.Builder()
-                                .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                                .setSampleRate(44100)
-                                .setChannelMask(AudioFormat.CHANNEL_IN_FRONT)
-                                .build()));
+        doorplateAudioMediaRecord.configAudioRecordConfig(audioRecordConfig);
         doorplateAudioMediaRecord.init(
                 new MediaRecordCallBack() {
                     @Override

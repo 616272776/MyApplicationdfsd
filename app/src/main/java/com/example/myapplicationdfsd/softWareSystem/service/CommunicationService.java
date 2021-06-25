@@ -2,6 +2,7 @@ package com.example.myapplicationdfsd.softWareSystem.service;
 
 import android.app.Service;
 import android.content.Intent;
+import android.os.Binder;
 import android.os.IBinder;
 
 import androidx.annotation.Nullable;
@@ -9,27 +10,24 @@ import androidx.annotation.Nullable;
 public class CommunicationService extends Service {
     public static final String TAG = "CommunicationService";
 
-//    public class MyBinder extends Binder{
-//        public DoorplateSystemManagerService getService(){
-//            return DoorplateSystemManagerService.this;
-//        }
-//    }
+    public class MyBinder extends Binder {
+        public CommunicationService getService(){
+            return CommunicationService.this;
+        }
+    }
 
 
-//    private MyBinder binder = new MyBinder();
+    private MyBinder binder = new MyBinder();
 
     @Override
     public void onCreate() {
         super.onCreate();
-
-
     }
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-//        return binder;
-        return null;
+        return binder;
     }
 
     @Override

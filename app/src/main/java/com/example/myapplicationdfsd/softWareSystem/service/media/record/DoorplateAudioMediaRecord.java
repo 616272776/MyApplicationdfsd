@@ -4,6 +4,8 @@ import com.example.myapplicationdfsd.softWareSystem.service.media.data.MediaData
 
 import org.webrtc.audio.WebRtcAudioRecord;
 
+
+
 public class DoorplateAudioMediaRecord extends AbstractAudioMediaRecord {
 
     private WebRtcAudioRecord webRtcAudioRecord;
@@ -31,10 +33,10 @@ public class DoorplateAudioMediaRecord extends AbstractAudioMediaRecord {
                     recordingStep();
                     if (webRtcAudioRecord.keepAlive) {
                         if (bytesRead == byteBuffer.capacity()) {
-                            if (webRtcAudioRecord.microphoneMute) {
-                                byteBuffer.clear();
-                                byteBuffer.put(webRtcAudioRecord.emptyBytes);
-                            }
+//                            if (webRtcAudioRecord.microphoneMute) {
+//                                byteBuffer.clear();
+//                                byteBuffer.put(webRtcAudioRecord.emptyBytes);
+//                            }
                             webRtcAudioRecord.nativeDataIsRecorded(webRtcAudioRecord.nativeAudioRecord, bytesRead);
                         }
 
@@ -42,11 +44,13 @@ public class DoorplateAudioMediaRecord extends AbstractAudioMediaRecord {
                 }
             }
         });
+
+        webRtcAudioRecord.byteBuffer = byteBuffer;
+        webRtcAudioRecord.audioRecord= audioRecord;
     }
 
     public void configWebRtcAudioRecord (WebRtcAudioRecord MyAudioInput){
-        this.webRtcAudioRecord = webRtcAudioRecord;
-        webRtcAudioRecord.byteBuffer = byteBuffer;
-        webRtcAudioRecord.audioRecord= audioRecord;
+        this.webRtcAudioRecord = MyAudioInput;
+
     }
 }

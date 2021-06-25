@@ -80,7 +80,9 @@ public class VideoSource extends MediaSource {
       VideoFrame adaptedFrame = VideoProcessor.applyFrameAdaptationParameters(frame, parameters);
       if (adaptedFrame != null) {
         nativeAndroidVideoTrackSource.onFrameCaptured(adaptedFrame);
-        mVideoSourceCallback.onFrameCaptured(adaptedFrame);
+        if(mVideoSourceCallback!=null){
+          mVideoSourceCallback.onFrameCaptured(adaptedFrame);
+        }
         adaptedFrame.release();
       }
     }

@@ -50,7 +50,7 @@ public class WebRtcAudioRecord {
   private static final int CALLBACK_BUFFER_SIZE_MS = 10;
 
   // Average number of callbacks per second.
-  private static final int BUFFERS_PER_SECOND = 1000 / CALLBACK_BUFFER_SIZE_MS;
+  public static final int BUFFERS_PER_SECOND = 1000 / CALLBACK_BUFFER_SIZE_MS;
 
   // We ask for a native buffer size of BUFFER_SIZE_FACTOR * (minimum required
   // buffer size). The extra space is allocated to guard against glitches under
@@ -290,22 +290,22 @@ public class WebRtcAudioRecord {
     int bufferSizeInBytes = Math.max(BUFFER_SIZE_FACTOR * minBufferSize, byteBuffer.capacity());
     Logging.d(TAG, "bufferSizeInBytes: " + bufferSizeInBytes);
     try {
-//      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//        // Use the AudioRecord.Builder class on Android M (23) and above.
-//        // Throws IllegalArgumentException.
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        // Use the AudioRecord.Builder class on Android M (23) and above.
+        // Throws IllegalArgumentException.
 //        audioRecord = createAudioRecordOnMOrHigher(
 //            audioSource, sampleRate, channelConfig, audioFormat, bufferSizeInBytes);
-//        audioSourceMatchesRecordingSessionRef.set(null);
-//        if (preferredDevice != null) {
-//          setPreferredDevice(preferredDevice);
-//        }
-//      } else {
-//        // Use the old AudioRecord constructor for API levels below 23.
-//        // Throws UnsupportedOperationException.
-//        audioRecord = createAudioRecordOnLowerThanM(
-//            audioSource, sampleRate, channelConfig, audioFormat, bufferSizeInBytes);
-//        audioSourceMatchesRecordingSessionRef.set(null);
-//      }
+        audioSourceMatchesRecordingSessionRef.set(null);
+        if (preferredDevice != null) {
+          setPreferredDevice(preferredDevice);
+        }
+      } else {
+        // Use the old AudioRecord constructor for API levels below 23.
+        // Throws UnsupportedOperationException.
+        audioRecord = createAudioRecordOnLowerThanM(
+            audioSource, sampleRate, channelConfig, audioFormat, bufferSizeInBytes);
+        audioSourceMatchesRecordingSessionRef.set(null);
+      }
     } catch (IllegalArgumentException | UnsupportedOperationException e) {
       // Report of exception message is sufficient. Example: "Cannot create AudioRecord".
       reportWebRtcAudioRecordInitError(e.getMessage());
@@ -327,6 +327,7 @@ public class WebRtcAudioRecord {
               .onWebRtcAudioRecordInit(audioSource, 2, sampleRate,
                       channels, 16, 100, bufferSizeInBytes);
     }
+
     // new add end
 
 
@@ -366,7 +367,8 @@ public class WebRtcAudioRecord {
     assertTrue(audioRecord != null);
     assertTrue(audioThread == null);
     try {
-      audioRecord.startRecording();
+      keepAlive=true;
+//      audioRecord.startRecording();
 
       // new add begin
       if (mWebRtcAudioRecordCallback != null) {
@@ -387,7 +389,7 @@ public class WebRtcAudioRecord {
     }
     audioThread = new AudioRecordThread("AudioRecordJavaThread");
     audioThread.start();
-    keepAlive=true;
+
     scheduleLogRecordingConfigurationsTask(audioRecord);
     return true;
   }
@@ -567,7 +569,7 @@ public class WebRtcAudioRecord {
   // Reference from Android code, AudioFormat.getBytesPerSample. BitPerSample / 8
   // Default audio data format is PCM 16 bits per sample.
   // Guaranteed to be supported by all devices
-  private static int getBytesPerSample(int audioFormat) {
+  public static int getBytesPerSample(int audioFormat) {
     switch (audioFormat) {
       case AudioFormat.ENCODING_PCM_8BIT:
         return 1;

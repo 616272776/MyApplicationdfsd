@@ -1,22 +1,10 @@
 package com.example.myapplicationdfsd.softWareSystem.service.media.muxer;
 
 import android.media.MediaFormat;
-
-import com.example.myapplicationdfsd.softWareSystem.service.media.data.AudioData;
-import com.example.myapplicationdfsd.softWareSystem.service.media.data.MediaData;
 import com.example.myapplicationdfsd.softWareSystem.service.media.data.MediaEncodeData;
-
-import org.webrtc.Logging;
-
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DoorplateMediaMuxer extends AbstractMediaMuxer {
     private final Object mLock = new Object();
-
-
-
-
-
     @Override
     public void init(String filePath) {
         super.init(filePath);
@@ -33,7 +21,6 @@ public class DoorplateMediaMuxer extends AbstractMediaMuxer {
                     if(mediaFormat==null){
                         if(mMediaMuxerIsStarted.get()){
                             mMediaMuxer.writeSampleData(mAudioTrackIndex, mediaEncodeData.getEncodedData(), mediaEncodeData.getBufferInfo());
-
                         }
                     }else {
                         mAudioTrackIndex = addAudioTrack(mediaEncodeData.getMediaFormat());
