@@ -27,11 +27,12 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activity.PoliceAffairsActivity" android:launchMode="singleInstance"/>
-        <activity android:name=".activity.MediaShowActivity" android:launchMode="singleInstance"/>
+        <activity android:name=".software.activity.PoliceAffairsActivity" android:launchMode="singleInstance"/>
+        <activity android:name=".software.activity.MediaShowActivity" android:launchMode="singleInstance"/>
 
-        <service android:name=".softWareSystem.service.DoorplateSystemManagerService"/>
-        <service android:name=".softWareSystem.service.MediaService"/>
+        <service android:name=".software.service.DoorplateSystemManagerService"/>
+        <service android:name=".software.service.MediaService"/>
+        <service android:name=".software.service.CommunicationService"/>
     </application>
 
 </manifest>

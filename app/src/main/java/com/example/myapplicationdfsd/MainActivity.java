@@ -21,8 +21,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.example.myapplicationdfsd.softWareSystem.service.DoorplateSystemManagerService;
-import com.example.myapplicationdfsd.softWareSystem.service.MediaService;
+import com.example.myapplicationdfsd.software.service.CommunicationService;
+import com.example.myapplicationdfsd.software.service.DoorplateSystemManagerService;
+import com.example.myapplicationdfsd.software.service.MediaService;
 
 import org.json.JSONObject;
 import org.webrtc.AudioSource;
@@ -40,7 +41,6 @@ import org.webrtc.SessionDescription;
 import org.webrtc.SurfaceTextureHelper;
 import org.webrtc.SurfaceViewRenderer;
 import org.webrtc.VideoCapturer;
-import org.webrtc.VideoFrame;
 import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
 
@@ -79,15 +79,29 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     private AtomicBoolean mEquipmentNormal = new AtomicBoolean(false);
     public static AtomicBoolean startConnect = new AtomicBoolean(false);
 
-    private MediaService mService;
-    private ServiceConnection mConnection = new ServiceConnection() {
+    private MediaService mediaService;
+    private CommunicationService communicationService;
+
+    private ServiceConnection mediaServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName className,
                                        IBinder service) {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
             MediaService.MyBinder binder = (MediaService.MyBinder) service;
-             mService = binder.getService();
+            mediaService = binder.getService();
+        }
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
 
+        }
+    };
+    private ServiceConnection communicationConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            CommunicationService.MyBinder binder = (CommunicationService.MyBinder) service;
+            communicationService = binder.getService();
         }
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
@@ -102,11 +116,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
             , Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
     //视频存储
-    MyVideoEncoder mVideoEncoder = null;
-    public static AtomicBoolean mVideoRecordStarted = new AtomicBoolean(false);
     public static VideoSource videoSource;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,8 +134,6 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         Intent intent = new Intent(this, DoorplateSystemManagerService.class);
         startService(intent);
 
-        checkEquipment();
-
         speaker = (Button) findViewById(R.id.speaker);
         button = (Button) findViewById(R.id.button);
         button2 = (Button) findViewById(R.id.button2);
@@ -133,95 +141,86 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         button6 = (Button) findViewById(R.id.button6);
         button3 = (Button) findViewById(R.id.button3);
 
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        //最大音量
+        int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        //当前音量
+        int currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
 
 
+        peerConnectionMap = new HashMap<>();
+        iceServers = new ArrayList<>();
+        iceServers.add(PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer());
+        iceServers.add(PeerConnection.IceServer.builder("stun:139.224.12.1").createIceServer());
 
-            AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-            //最大音量
-            int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-            //当前音量
-            int currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        eglBaseContext = EglBase.create().getEglBaseContext();
 
+        // create PeerConnectionFactory
+        PeerConnectionFactory.initialize(PeerConnectionFactory.InitializationOptions
+                .builder(this)
+                .createInitializationOptions());
+        PeerConnectionFactory.Options options = new PeerConnectionFactory.Options();
+        DefaultVideoEncoderFactory defaultVideoEncoderFactory =
+                new DefaultVideoEncoderFactory(eglBaseContext, true, true);
+        DefaultVideoDecoderFactory defaultMyVideoDecoderFactory =
+                new DefaultVideoDecoderFactory(eglBaseContext);
+        peerConnectionFactory = PeerConnectionFactory.builder()
+                .setOptions(options)
+                .setVideoEncoderFactory(defaultVideoEncoderFactory)
+                .setVideoDecoderFactory(defaultMyVideoDecoderFactory)
+                .createPeerConnectionFactory();
 
-            peerConnectionMap = new HashMap<>();
-            iceServers = new ArrayList<>();
-            iceServers.add(PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer());
-            iceServers.add(PeerConnection.IceServer.builder("stun:139.224.12.1").createIceServer());
+        SurfaceTextureHelper surfaceTextureHelper = SurfaceTextureHelper.create("CaptureThread", eglBaseContext);
+        // create VideoCapturer
+        VideoCapturer videoCapturer = createCameraCapturer(true);
+        videoSource = peerConnectionFactory.createVideoSource(videoCapturer.isScreencast());
 
-            eglBaseContext = EglBase.create().getEglBaseContext();
-
-            // create PeerConnectionFactory
-            PeerConnectionFactory.initialize(PeerConnectionFactory.InitializationOptions
-                    .builder(this)
-                    .createInitializationOptions());
-            PeerConnectionFactory.Options options = new PeerConnectionFactory.Options();
-            DefaultVideoEncoderFactory defaultVideoEncoderFactory =
-                    new DefaultVideoEncoderFactory(eglBaseContext, true, true);
-            DefaultVideoDecoderFactory defaultMyVideoDecoderFactory =
-                    new DefaultVideoDecoderFactory(eglBaseContext);
-            peerConnectionFactory = PeerConnectionFactory.builder()
-                    .setOptions(options)
-                    .setVideoEncoderFactory(defaultVideoEncoderFactory)
-                    .setVideoDecoderFactory(defaultMyVideoDecoderFactory)
-                    .createPeerConnectionFactory();
-
-            SurfaceTextureHelper surfaceTextureHelper = SurfaceTextureHelper.create("CaptureThread", eglBaseContext);
-            // create VideoCapturer
-            VideoCapturer videoCapturer = createCameraCapturer(true);
-            videoSource = peerConnectionFactory.createVideoSource(videoCapturer.isScreencast());
-
-            videoCapturer.initialize(surfaceTextureHelper, getApplicationContext(), videoSource.getCapturerObserver());
-            videoCapturer.startCapture(640, 480, 30);
+        videoCapturer.initialize(surfaceTextureHelper, getApplicationContext(), videoSource.getCapturerObserver());
+        videoCapturer.startCapture(640, 480, 30);
 
 
-            localView = findViewById(R.id.localView);
-            localView.setMirror(true);
-            localView.init(eglBaseContext, null);
+        localView = findViewById(R.id.localView);
+        localView.setMirror(true);
+        localView.init(eglBaseContext, null);
 
-            // create VideoTrack
-            VideoTrack videoTrack = peerConnectionFactory.createVideoTrack("100", videoSource);
+        // create VideoTrack
+        VideoTrack videoTrack = peerConnectionFactory.createVideoTrack("100", videoSource);
 
-            MediaConstraints constraints = new MediaConstraints();
-            AudioSource audioSource = peerConnectionFactory.createAudioSource(constraints);
-            AudioTrack audioTrack = peerConnectionFactory.createAudioTrack("101", audioSource);
+        MediaConstraints constraints = new MediaConstraints();
+        AudioSource audioSource = peerConnectionFactory.createAudioSource(constraints);
+        AudioTrack audioTrack = peerConnectionFactory.createAudioTrack("101", audioSource);
 
 
 //        // display in localView
-            videoTrack.addSink(localView);
+        videoTrack.addSink(localView);
 
 
-            remoteViews = new SurfaceViewRenderer[]{
-                    findViewById(R.id.remoteView),
-                    findViewById(R.id.remoteView2),
-                    findViewById(R.id.remoteView3),
-            };
-            for (SurfaceViewRenderer remoteView : remoteViews) {
-                remoteView.setMirror(false);
-                remoteView.init(eglBaseContext, null);
-            }
+        remoteViews = new SurfaceViewRenderer[]{
+                findViewById(R.id.remoteView),
+                findViewById(R.id.remoteView2),
+                findViewById(R.id.remoteView3),
+        };
+        for (SurfaceViewRenderer remoteView : remoteViews) {
+            remoteView.setMirror(false);
+            remoteView.init(eglBaseContext, null);
+        }
 
-            mediaStream = peerConnectionFactory.createLocalMediaStream("mediaStream");
-            mediaStream.addTrack(videoTrack);
-            mediaStream.addTrack(audioTrack);
+        mediaStream = peerConnectionFactory.createLocalMediaStream("mediaStream");
+        mediaStream.addTrack(videoTrack);
+        mediaStream.addTrack(audioTrack);
 
 
 //        function(null);
         startConnect(null);
 
         Intent mediaServiceIntent = new Intent(this, MediaService.class);
-        bindService(mediaServiceIntent,mConnection,Context.BIND_AUTO_CREATE);
+        bindService(mediaServiceIntent, mediaServiceConnection, Context.BIND_AUTO_CREATE);
 //        startService(mediaServiceIntent);
+
+        Intent webRTCCommunicatorServer  = new Intent(this, CommunicationService.class);
+        bindService(webRTCCommunicatorServer, communicationConnection, Context.BIND_AUTO_CREATE);
     }
 
-    private void checkEquipment() {
-        Camera1Enumerator enumerator = new Camera1Enumerator(false);
-        final String[] deviceNames = enumerator.getDeviceNames();
-
-        if (deviceNames.length > 0) {
-            mEquipmentNormal.set(true);
-        }
-
-    }
 
     private void requestPermission() {
         if (!checkPermissionAllGranted()) {
@@ -436,9 +435,9 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         remoteViews[1].clearImage();
         remoteViews[2].clearImage();
         PeerConnection peerConnection = peerConnectionMap.get(socketId);
-        if(peerConnection==null){
+        if (peerConnection == null) {
 
-        }else {
+        } else {
             peerConnectionMap.remove(socketId);
             peerConnection.dispose();
         }
@@ -516,18 +515,10 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     }
 
     public void stopRecord(View view) {
-//        if (mVideoEncoder != null) {
-//            mVideoEncoder.release();
-//        }
-//        mVideoRecordStarted.set(false);
-//        Toast.makeText(this, "停止录制", Toast.LENGTH_SHORT).show();
-        mService.stop();
+        mediaService.stop();
     }
 
     public void startRecord(View view) {
-        mVideoEncoder.prepareEncoder();
-        mVideoRecordStarted.set(true);
-
     }
 
     public void closeConnect(View view) {
@@ -548,11 +539,12 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     }
 
     private boolean index = false;
+
     public void startConnect(View view) {
-        if(!index){
+        if (!index) {
             SignalingClient.get().init(this);
-            index=true;
-        }else {
+            index = true;
+        } else {
             SignalingClient.get().reconnect();
         }
 
