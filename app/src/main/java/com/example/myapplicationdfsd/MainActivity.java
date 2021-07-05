@@ -21,9 +21,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.example.myapplicationdfsd.software.service.CommunicationService;
+import com.example.myapplicationdfsd.software.activity.PoliceAffairsActivity;
+import com.example.myapplicationdfsd.software.service.P2PCommunicationService;
 import com.example.myapplicationdfsd.software.service.DoorplateSystemManagerService;
 import com.example.myapplicationdfsd.software.service.MediaService;
+import com.example.myapplicationdfsd.software.service.communicator.DoorplateWebRTCCommunicator;
+import com.example.myapplicationdfsd.software.service.communicator.webrtc.PeerConnectionAdapter;
+import com.example.myapplicationdfsd.software.service.communicator.webrtc.SdpAdapter;
+import com.example.myapplicationdfsd.software.service.communicator.webrtc.SignalingClient;
 
 import org.json.JSONObject;
 import org.webrtc.AudioSource;
@@ -66,8 +71,6 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     private int currVolume;
     private boolean onSpeaker = false;
 
-    private PeerConnection mPeerConnection;
-
     private Button speaker;
     private Button button;
     private Button button2;
@@ -80,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     public static AtomicBoolean startConnect = new AtomicBoolean(false);
 
     private MediaService mediaService;
-    private CommunicationService communicationService;
+    private P2PCommunicationService communicationService;
 
     private ServiceConnection mediaServiceConnection = new ServiceConnection() {
         @Override
@@ -90,6 +93,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
             MediaService.MyBinder binder = (MediaService.MyBinder) service;
             mediaService = binder.getService();
         }
+
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
 
@@ -100,9 +104,10 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         public void onServiceConnected(ComponentName className,
                                        IBinder service) {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
-            CommunicationService.MyBinder binder = (CommunicationService.MyBinder) service;
+            P2PCommunicationService.MyBinder binder = (P2PCommunicationService.MyBinder) service;
             communicationService = binder.getService();
         }
+
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
 
@@ -112,8 +117,9 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
 
     //权限
     private final static int PERMISSIONS_REQUEST_CODE = 1;
-    private final String[] permissions = {Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO
-            , Manifest.permission.WRITE_EXTERNAL_STORAGE};
+    private final String[] permissions = {Manifest.permission.CAMERA,
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
     //视频存储
     public static VideoSource videoSource;
@@ -151,7 +157,12 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         peerConnectionMap = new HashMap<>();
         iceServers = new ArrayList<>();
         iceServers.add(PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:139.224.12.1").createIceServer());
+        iceServers.add(PeerConnection.IceServer.builder("stun:stun.ideasip.com").createIceServer());
+        iceServers.add(PeerConnection.IceServer.builder("stun:stun.schlund.de").createIceServer());
+        iceServers.add(PeerConnection.IceServer.builder("stun:stun.voiparound.com").createIceServer());
+        iceServers.add(PeerConnection.IceServer.builder("stun:stun.voipbuster.com").createIceServer());
+        iceServers.add(PeerConnection.IceServer.builder("stun:stun.voipstunt.com").createIceServer());
+        iceServers.add(PeerConnection.IceServer.builder("stun:stun.xten.com").createIceServer());
 
         eglBaseContext = EglBase.create().getEglBaseContext();
 
@@ -217,8 +228,12 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         bindService(mediaServiceIntent, mediaServiceConnection, Context.BIND_AUTO_CREATE);
 //        startService(mediaServiceIntent);
 
-        Intent webRTCCommunicatorServer  = new Intent(this, CommunicationService.class);
+        Intent webRTCCommunicatorServer = new Intent(this, P2PCommunicationService.class);
         bindService(webRTCCommunicatorServer, communicationConnection, Context.BIND_AUTO_CREATE);
+
+
+        Intent policeAffairsActivity = new Intent(this, PoliceAffairsActivity.class);
+//        startActivity(policeAffairsActivity);
     }
 
 

@@ -1,7 +1,6 @@
-package com.example.myapplicationdfsd;
+package com.example.myapplicationdfsd.software.service.communicator.webrtc;
 
 import android.util.Log;
-import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -70,14 +69,14 @@ public class SignalingClient {
     public void init(Callback callback) {
         this.callback = callback;
         try {
-            SSLContext sslContext = SSLContext.getInstance("TLS");
-            sslContext.init(null, trustAll, null);
-                init=true;
+//            SSLContext sslContext = SSLContext.getInstance("TLS");
+//            sslContext.init(null, trustAll, null);
+//                init=true;
+//
+//            IO.setDefaultHostnameVerifier((hostname, session) -> true);
+//            IO.setDefaultSSLContext(sslContext);
 
-            IO.setDefaultHostnameVerifier((hostname, session) -> true);
-            IO.setDefaultSSLContext(sslContext);
-
-            socket = IO.socket("https://139.224.12.1:8084");
+            socket = IO.socket("http://139.224.12.1:8084");
             socket.connect();
             if(!socket.connected()){
                 Log.e(TAG, "signaling connect fail");
@@ -127,11 +126,11 @@ public class SignalingClient {
                 }
             });
         }
-        catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (KeyManagementException e) {
-            e.printStackTrace();
-        }
+//        catch (NoSuchAlgorithmException e) {
+//            e.printStackTrace();
+//        } catch (KeyManagementException e) {
+//            e.printStackTrace();
+//        }
         catch (URISyntaxException e) {
             e.printStackTrace();
         }

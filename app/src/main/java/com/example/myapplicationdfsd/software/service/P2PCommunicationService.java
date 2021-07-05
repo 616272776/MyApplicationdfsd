@@ -5,18 +5,24 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 
+import com.example.myapplicationdfsd.software.service.communicator.P2PCommunicationInterface;
+import com.example.myapplicationdfsd.software.service.communicator.SignalingClientInterface;
+
+import java.util.List;
+
 import androidx.annotation.Nullable;
 
-public class CommunicationService extends Service {
-    public static final String TAG = "CommunicationService";
+public class P2PCommunicationService extends Service {
+    public static final String TAG = "P2PCommunicationService";
     private MyBinder binder = new MyBinder();
 
-
+    private List<P2PCommunicationInterface>  WebRTCP2PCommunicatorList;
+    private SignalingClientInterface signalingClient;
 
 
     public class MyBinder extends Binder {
-        public CommunicationService getService(){
-            return CommunicationService.this;
+        public P2PCommunicationService getService(){
+            return P2PCommunicationService.this;
         }
     }
 
@@ -24,6 +30,7 @@ public class CommunicationService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+
     }
 
     @Nullable
@@ -39,12 +46,17 @@ public class CommunicationService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
         return START_NOT_STICKY;
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+
+    }
+
+    public void connectSignaling(){
+        signalingClient.connectSignaling();
+
     }
 }

@@ -32,7 +32,7 @@
 
         <service android:name=".software.service.DoorplateSystemManagerService"/>
         <service android:name=".software.service.MediaService"/>
-        <service android:name=".software.service.CommunicationService"/>
+        <service android:name=".software.service.P2PCommunicationService"/>
     </application>
 
 </manifest>

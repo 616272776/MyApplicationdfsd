@@ -1,4 +1,4 @@
-package com.example.myapplicationdfsd;
+package com.example.myapplicationdfsd.software.service.communicator.webrtc;
 
 import android.util.Log;
 
