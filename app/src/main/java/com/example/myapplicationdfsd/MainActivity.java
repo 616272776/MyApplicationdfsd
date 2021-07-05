@@ -156,14 +156,25 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
 
         peerConnectionMap = new HashMap<>();
         iceServers = new ArrayList<>();
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer());
+        iceServers.add(PeerConnection.IceServer.builder("stun:stun1.l.google.com:19302").createIceServer());
+        iceServers.add(PeerConnection.IceServer.builder("stun:stun2.l.google.com:19302").createIceServer());
+        iceServers.add(PeerConnection.IceServer.builder("stun:stun3.l.google.com:19302").createIceServer());
+        iceServers.add(PeerConnection.IceServer.builder("stun:stun4.l.google.com:19302").createIceServer());
+        iceServers.add(PeerConnection.IceServer.builder("stun:23.21.150.121").createIceServer());
+        iceServers.add(PeerConnection.IceServer.builder("stun:stun01.sipphone.com").createIceServer());
+        iceServers.add(PeerConnection.IceServer.builder("stun:stun.ekiga.net").createIceServer());
+        iceServers.add(PeerConnection.IceServer.builder("stun:stun.fwdnet.net").createIceServer());
         iceServers.add(PeerConnection.IceServer.builder("stun:stun.ideasip.com").createIceServer());
+        iceServers.add(PeerConnection.IceServer.builder("stun:stun.iptel.org").createIceServer());
+        iceServers.add(PeerConnection.IceServer.builder("stun:stun.rixtelecom.se").createIceServer());
         iceServers.add(PeerConnection.IceServer.builder("stun:stun.schlund.de").createIceServer());
+        iceServers.add(PeerConnection.IceServer.builder("stun:stunserver.org").createIceServer());
+        iceServers.add(PeerConnection.IceServer.builder("stun:stun.softjoys.com").createIceServer());
         iceServers.add(PeerConnection.IceServer.builder("stun:stun.voiparound.com").createIceServer());
         iceServers.add(PeerConnection.IceServer.builder("stun:stun.voipbuster.com").createIceServer());
         iceServers.add(PeerConnection.IceServer.builder("stun:stun.voipstunt.com").createIceServer());
+        iceServers.add(PeerConnection.IceServer.builder("stun:stun.voxgratia.org").createIceServer());
         iceServers.add(PeerConnection.IceServer.builder("stun:stun.xten.com").createIceServer());
-
         eglBaseContext = EglBase.create().getEglBaseContext();
 
         // create PeerConnectionFactory
