@@ -1,19 +1,19 @@
-import { sendMessage } from "../signaling.js";
+import { sendMessage, socket } from "../signaling.js";
 
 const offerOptions = {
   offerToReceiveAudio: 1,
   offerToReceiveVideo: 1
 };
-export async function createOfferSDP(pc,formSocketId,toSocketid) {
+export async function createOfferSDP(pc,toSocketid) {
   try {
     console.log('pc1 createOffer start');
     const offer = await pc.createOffer(offerOptions);
-    await onCreateOfferSuccess(pc,offer,formSocketId,toSocketid);
+    await onCreateOfferSuccess(pc,offer,toSocketid);
   } catch (e) {
     onCreateSessionDescriptionError(e);
   }
 }
-async function onCreateOfferSuccess(pc,desc,formSocketId,toSocketid) {
+async function onCreateOfferSuccess(pc,desc,toSocketid) {
 
   console.log(`Offer from pc1\n${desc.sdp}`);
   console.log('pc1 setLocalDescription start');
@@ -22,7 +22,7 @@ async function onCreateOfferSuccess(pc,desc,formSocketId,toSocketid) {
     sendMessage({
       type: desc.type,
       sdp: desc.sdp,
-      from: formSocketId,
+      from: socket.id,
       to: toSocketid
     });
     onSetLocalSuccess(pc);

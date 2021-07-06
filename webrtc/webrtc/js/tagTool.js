@@ -7,6 +7,7 @@ function addVideoTag(socketId){
     videoTag.setAttribute("autoplay","autoplay");
     videoTag.setAttribute("playsinline","true");
     videoTag.setAttribute("id",socketId);
+    videoTag.setAttribute("style","width: 550px;");
 
     app.appendChild(videoTag);
 

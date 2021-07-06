@@ -13,7 +13,6 @@ const constraints = window.constraints = {
     console.log(`Using video device: ${videoTracks[0].label}`);
     window.stream = stream; // make variable available to browser console
     localStream=stream;
-    //localStream.removeTrack(localStream.getAudioTracks()[0]);
     video.srcObject = localStream;
   }
   
@@ -49,3 +48,4 @@ export async function getMedia() {
     }
   }
 
+ 
