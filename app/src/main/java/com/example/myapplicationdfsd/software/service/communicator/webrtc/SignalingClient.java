@@ -76,7 +76,7 @@ public class SignalingClient {
 //            IO.setDefaultHostnameVerifier((hostname, session) -> true);
 //            IO.setDefaultSSLContext(sslContext);
 
-            socket = IO.socket("http://139.224.12.1:8084");
+            socket = IO.socket("https://signaling.ppamatrix.com:1446");
             socket.connect();
             if(!socket.connected()){
                 Log.e(TAG, "signaling connect fail");

@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     MediaStream mediaStream;
     List<PeerConnection.IceServer> iceServers;
 
+
     HashMap<String, PeerConnection> peerConnectionMap;
     private String surfaceIndex0;
     private String surfaceIndex1;
@@ -431,6 +432,9 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
 
     @Override
     public void onPeerJoined(String socketId) {
+        MediaConstraints mediaConstraints = new MediaConstraints();
+        mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "false"));
+        mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "flase"));
         PeerConnection peerConnection = getOrCreatePeerConnection(socketId);
         peerConnection.createOffer(new SdpAdapter("createOfferSdp:" + socketId) {
             @Override
@@ -439,7 +443,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
                 peerConnection.setLocalDescription(new SdpAdapter("setLocalSdp:" + socketId), sessionDescription);
                 SignalingClient.get().sendSessionDescription(sessionDescription, socketId);
             }
-        }, new MediaConstraints());
+        }, mediaConstraints);
     }
 
     @Override
@@ -471,6 +475,9 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
 
     @Override
     public void onOfferReceived(JSONObject data) {
+        MediaConstraints mediaConstraints = new MediaConstraints();
+        mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "false"));
+        mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "flase"));
         runOnUiThread(() -> {
             final String socketId = data.optString("from");
             PeerConnection peerConnection = getOrCreatePeerConnection(socketId);
@@ -483,7 +490,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
                     peerConnectionMap.get(socketId).setLocalDescription(new SdpAdapter("setLocalSdp:" + socketId), sdp);
                     SignalingClient.get().sendSessionDescription(sdp, socketId);
                 }
-            }, new MediaConstraints());
+            }, mediaConstraints);
 
         });
     }
