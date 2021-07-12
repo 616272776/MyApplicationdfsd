@@ -43,6 +43,8 @@ import org.webrtc.MediaStream;
 import org.webrtc.PeerConnection;
 import org.webrtc.PeerConnectionFactory;
 import org.webrtc.SessionDescription;
+import org.webrtc.SoftwareVideoDecoderFactory;
+import org.webrtc.SoftwareVideoEncoderFactory;
 import org.webrtc.SurfaceTextureHelper;
 import org.webrtc.SurfaceViewRenderer;
 import org.webrtc.VideoCapturer;
@@ -157,25 +159,8 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
 
         peerConnectionMap = new HashMap<>();
         iceServers = new ArrayList<>();
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun1.l.google.com:19302").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun2.l.google.com:19302").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun3.l.google.com:19302").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun4.l.google.com:19302").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:23.21.150.121").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun01.sipphone.com").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun.ekiga.net").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun.fwdnet.net").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun.ideasip.com").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun.iptel.org").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun.rixtelecom.se").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun.schlund.de").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stunserver.org").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun.softjoys.com").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun.voiparound.com").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun.voipbuster.com").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun.voipstunt.com").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun.voxgratia.org").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun.xten.com").createIceServer());
+        iceServers.add(PeerConnection.IceServer.builder("stun:139.224.12.1").createIceServer());
+        iceServers.add(PeerConnection.IceServer.builder("turn:139.224.12.1").setUsername("test").setPassword("123456").createIceServer());
         eglBaseContext = EglBase.create().getEglBaseContext();
 
         // create PeerConnectionFactory
@@ -189,8 +174,8 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
                 new DefaultVideoDecoderFactory(eglBaseContext);
         peerConnectionFactory = PeerConnectionFactory.builder()
                 .setOptions(options)
-                .setVideoEncoderFactory(defaultVideoEncoderFactory)
-                .setVideoDecoderFactory(defaultMyVideoDecoderFactory)
+                .setVideoEncoderFactory(new SoftwareVideoEncoderFactory())
+                .setVideoDecoderFactory(new SoftwareVideoDecoderFactory())
                 .createPeerConnectionFactory();
 
         SurfaceTextureHelper surfaceTextureHelper = SurfaceTextureHelper.create("CaptureThread", eglBaseContext);
@@ -236,8 +221,8 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
 //        function(null);
         startConnect(null);
 
-        Intent mediaServiceIntent = new Intent(this, MediaService.class);
-        bindService(mediaServiceIntent, mediaServiceConnection, Context.BIND_AUTO_CREATE);
+//        Intent mediaServiceIntent = new Intent(this, MediaService.class);
+//        bindService(mediaServiceIntent, mediaServiceConnection, Context.BIND_AUTO_CREATE);
 //        startService(mediaServiceIntent);
 
         Intent webRTCCommunicatorServer = new Intent(this, P2PCommunicationService.class);
@@ -433,8 +418,8 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     @Override
     public void onPeerJoined(String socketId) {
         MediaConstraints mediaConstraints = new MediaConstraints();
-        mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "false"));
-        mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "flase"));
+        mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"));
+        mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"));
         PeerConnection peerConnection = getOrCreatePeerConnection(socketId);
         peerConnection.createOffer(new SdpAdapter("createOfferSdp:" + socketId) {
             @Override
@@ -476,8 +461,8 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     @Override
     public void onOfferReceived(JSONObject data) {
         MediaConstraints mediaConstraints = new MediaConstraints();
-        mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "false"));
-        mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "flase"));
+        mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"));
+        mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"));
         runOnUiThread(() -> {
             final String socketId = data.optString("from");
             PeerConnection peerConnection = getOrCreatePeerConnection(socketId);
