@@ -12,6 +12,7 @@ import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -37,6 +38,8 @@ import org.webrtc.Camera1Enumerator;
 import org.webrtc.DefaultVideoDecoderFactory;
 import org.webrtc.DefaultVideoEncoderFactory;
 import org.webrtc.EglBase;
+import org.webrtc.HardwareVideoDecoderFactory;
+import org.webrtc.HardwareVideoEncoderFactory;
 import org.webrtc.IceCandidate;
 import org.webrtc.MediaConstraints;
 import org.webrtc.MediaStream;
@@ -51,13 +54,21 @@ import org.webrtc.VideoCapturer;
 import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
 public class MainActivity extends AppCompatActivity implements SignalingClient.Callback {
 
+    private static final String TAG = "MainActivity";
     EglBase.Context eglBaseContext;
     PeerConnectionFactory peerConnectionFactory;
     SurfaceViewRenderer localView;
@@ -174,8 +185,9 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
                 new DefaultVideoDecoderFactory(eglBaseContext);
         peerConnectionFactory = PeerConnectionFactory.builder()
                 .setOptions(options)
+//                .setVideoEncoderFactory(new HardwareVideoEncoderFactory(eglBaseContext,true,true))
                 .setVideoEncoderFactory(new SoftwareVideoEncoderFactory())
-                .setVideoDecoderFactory(new SoftwareVideoDecoderFactory())
+                .setVideoDecoderFactory(new HardwareVideoDecoderFactory(eglBaseContext))
                 .createPeerConnectionFactory();
 
         SurfaceTextureHelper surfaceTextureHelper = SurfaceTextureHelper.create("CaptureThread", eglBaseContext);
@@ -217,9 +229,44 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         mediaStream.addTrack(videoTrack);
         mediaStream.addTrack(audioTrack);
 
+        String macAddress = DoorplateSystemManagerService.smatekManager.getEthMacAddress();
+        String url = "http://139.224.12.1:20880/getDoorplate/"+macAddress;
+        OkHttpClient okHttpClient = new OkHttpClient();
+        final Request request = new Request.Builder()
+                .url(url)
+                .get()//默认就是GET请求，可以不写
+                .build();
+        Call call = okHttpClient.newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.d(TAG, "onFailure: ");
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String doorplateNumber = response.body().string();
+                Log.d(TAG, "onResponse: " + doorplateNumber);
+                if(doorplateNumber.contains("false")){
+
+                }else{
+                    startConnect(null);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(MainActivity.this,String.format("查询到门牌为%s，加入房间%s",doorplateNumber,doorplateNumber), Toast.LENGTH_SHORT).show();
+                            SignalingClient.room = doorplateNumber.substring(22,40);
+                            startConnect(null);
+                        }
+                    });
+                }
+            }
+        });
+
+
 
 //        function(null);
-        startConnect(null);
+//        startConnect(null);
 
 //        Intent mediaServiceIntent = new Intent(this, MediaService.class);
 //        bindService(mediaServiceIntent, mediaServiceConnection, Context.BIND_AUTO_CREATE);
