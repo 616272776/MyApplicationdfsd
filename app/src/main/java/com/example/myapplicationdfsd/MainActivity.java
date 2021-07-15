@@ -185,8 +185,8 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
                 new DefaultVideoDecoderFactory(eglBaseContext);
         peerConnectionFactory = PeerConnectionFactory.builder()
                 .setOptions(options)
-//                .setVideoEncoderFactory(new HardwareVideoEncoderFactory(eglBaseContext,true,true))
-                .setVideoEncoderFactory(new SoftwareVideoEncoderFactory())
+                .setVideoEncoderFactory(new HardwareVideoEncoderFactory(eglBaseContext,false,false))
+//                .setVideoEncoderFactory(new SoftwareVideoEncoderFactory())
                 .setVideoDecoderFactory(new HardwareVideoDecoderFactory(eglBaseContext))
                 .createPeerConnectionFactory();
 
@@ -229,39 +229,45 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         mediaStream.addTrack(videoTrack);
         mediaStream.addTrack(audioTrack);
 
-        String macAddress = DoorplateSystemManagerService.smatekManager.getEthMacAddress();
-        String url = "http://139.224.12.1:20880/getDoorplate/"+macAddress;
-        OkHttpClient okHttpClient = new OkHttpClient();
-        final Request request = new Request.Builder()
-                .url(url)
-                .get()//默认就是GET请求，可以不写
-                .build();
-        Call call = okHttpClient.newCall(request);
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.d(TAG, "onFailure: ");
-            }
+        if(DoorplateSystemManagerService.smatekManager==null){
+            SignalingClient.room="1";
 
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                String doorplateNumber = response.body().string();
-                Log.d(TAG, "onResponse: " + doorplateNumber);
-                if(doorplateNumber.contains("false")){
-
-                }else{
-                    startConnect(null);
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(MainActivity.this,String.format("查询到门牌为%s，加入房间%s",doorplateNumber,doorplateNumber), Toast.LENGTH_SHORT).show();
-                            SignalingClient.room = doorplateNumber.substring(22,40);
-                            startConnect(null);
-                        }
-                    });
+        }else{
+            String macAddress = DoorplateSystemManagerService.smatekManager.getEthMacAddress();
+            String url = "http://139.224.12.1:20880/getDoorplate/"+macAddress;
+            OkHttpClient okHttpClient = new OkHttpClient();
+            final Request request = new Request.Builder()
+                    .url(url)
+                    .get()//默认就是GET请求，可以不写
+                    .build();
+            Call call = okHttpClient.newCall(request);
+            call.enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    Log.d(TAG, "onFailure: ");
                 }
-            }
-        });
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    String doorplateNumber = response.body().string();
+                    Log.d(TAG, "onResponse: " + doorplateNumber);
+                    if(doorplateNumber.contains("false")){
+
+                    }else{
+//                    startConnect(null);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(MainActivity.this,String.format("查询到门牌为%s，加入房间%s",doorplateNumber,doorplateNumber), Toast.LENGTH_SHORT).show();
+                                SignalingClient.room = doorplateNumber.substring(22,40);
+                                startConnect(null);
+                            }
+                        });
+                    }
+                }
+            });
+
+        }
 
 
 
