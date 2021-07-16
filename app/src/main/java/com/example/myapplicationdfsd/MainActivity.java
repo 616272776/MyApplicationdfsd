@@ -180,13 +180,13 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
                 .createInitializationOptions());
         PeerConnectionFactory.Options options = new PeerConnectionFactory.Options();
         DefaultVideoEncoderFactory defaultVideoEncoderFactory =
-                new DefaultVideoEncoderFactory(eglBaseContext, true, true);
+                new DefaultVideoEncoderFactory(eglBaseContext, false, false);
         DefaultVideoDecoderFactory defaultMyVideoDecoderFactory =
                 new DefaultVideoDecoderFactory(eglBaseContext);
         peerConnectionFactory = PeerConnectionFactory.builder()
                 .setOptions(options)
-                .setVideoEncoderFactory(new HardwareVideoEncoderFactory(eglBaseContext,false,false))
-//                .setVideoEncoderFactory(new SoftwareVideoEncoderFactory())
+                .setVideoEncoderFactory(new HardwareVideoEncoderFactory(eglBaseContext,true,true))
+//                .setVideoEncoderFactory(defaultVideoEncoderFactory)
                 .setVideoDecoderFactory(new HardwareVideoDecoderFactory(eglBaseContext))
                 .createPeerConnectionFactory();
 
