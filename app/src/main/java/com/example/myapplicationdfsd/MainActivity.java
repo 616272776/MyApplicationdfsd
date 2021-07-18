@@ -179,13 +179,15 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
                 .builder(this)
                 .createInitializationOptions());
         PeerConnectionFactory.Options options = new PeerConnectionFactory.Options();
+
+
         DefaultVideoEncoderFactory defaultVideoEncoderFactory =
-                new DefaultVideoEncoderFactory(eglBaseContext, false, false);
+                new DefaultVideoEncoderFactory(eglBaseContext, false, true);
         DefaultVideoDecoderFactory defaultMyVideoDecoderFactory =
                 new DefaultVideoDecoderFactory(eglBaseContext);
         peerConnectionFactory = PeerConnectionFactory.builder()
                 .setOptions(options)
-                .setVideoEncoderFactory(new HardwareVideoEncoderFactory(eglBaseContext,true,true))
+                .setVideoEncoderFactory(new HardwareVideoEncoderFactory(eglBaseContext, false, true))
 //                .setVideoEncoderFactory(defaultVideoEncoderFactory)
                 .setVideoDecoderFactory(new HardwareVideoDecoderFactory(eglBaseContext))
                 .createPeerConnectionFactory();
@@ -196,7 +198,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         videoSource = peerConnectionFactory.createVideoSource(videoCapturer.isScreencast());
 
         videoCapturer.initialize(surfaceTextureHelper, getApplicationContext(), videoSource.getCapturerObserver());
-        videoCapturer.startCapture(640, 480, 30);
+        videoCapturer.startCapture(1280, 720, 30);
 
 
         localView = findViewById(R.id.localView);
@@ -229,12 +231,12 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         mediaStream.addTrack(videoTrack);
         mediaStream.addTrack(audioTrack);
 
-        if(DoorplateSystemManagerService.smatekManager==null){
-            SignalingClient.room="1";
+        if (DoorplateSystemManagerService.smatekManager == null) {
+            SignalingClient.room = "1";
 
-        }else{
+        } else {
             String macAddress = DoorplateSystemManagerService.smatekManager.getEthMacAddress();
-            String url = "http://139.224.12.1:20880/getDoorplate/"+macAddress;
+            String url = "http://139.224.12.1:20880/getDoorplate/" + macAddress;
             OkHttpClient okHttpClient = new OkHttpClient();
             final Request request = new Request.Builder()
                     .url(url)
@@ -251,15 +253,16 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
                 public void onResponse(Call call, Response response) throws IOException {
                     String doorplateNumber = response.body().string();
                     Log.d(TAG, "onResponse: " + doorplateNumber);
-                    if(doorplateNumber.contains("false")){
+                    if (doorplateNumber.contains("false")) {
 
-                    }else{
+                    } else {
 //                    startConnect(null);
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                Toast.makeText(MainActivity.this,String.format("查询到门牌为%s，加入房间%s",doorplateNumber,doorplateNumber), Toast.LENGTH_SHORT).show();
-                                SignalingClient.room = doorplateNumber.substring(22,40);
+                                Toast.makeText(MainActivity.this, String.format("查询到门牌为%s，加入房间%s", doorplateNumber, doorplateNumber), Toast.LENGTH_SHORT).show();
+                                SignalingClient.room = doorplateNumber.substring(22, 40);
+                                SignalingClient.room = "520502103003011111";
                                 startConnect(null);
                             }
                         });
@@ -268,7 +271,6 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
             });
 
         }
-
 
 
 //        function(null);

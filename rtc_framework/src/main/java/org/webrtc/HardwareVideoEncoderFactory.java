@@ -115,6 +115,8 @@ public class HardwareVideoEncoderFactory implements VideoEncoderFactory {
         Integer yuvColorFormat = MediaCodecUtils.selectColorFormat(
                 MediaCodecUtils.ENCODER_COLOR_FORMATS, info.getCapabilitiesForType(mime));
 
+//        input.params.put("profile-level-id","640c1f");
+
         if (type == VideoCodecMimeType.H264) {
             boolean isHighProfile = H264Utils.isSameH264Profile(
                     input.params, MediaCodecUtils.getCodecProperties(type, /* highProfile= */ true));
@@ -124,10 +126,13 @@ public class HardwareVideoEncoderFactory implements VideoEncoderFactory {
             if (!isHighProfile && !isBaselineProfile) {
                 return null;
             }
-            //不明白为什么一定要HighProfile
-//            if (isHighProfile && !isH264HighProfileSupported(info)) {
+//            if(!isHighProfile){
 //                return null;
 //            }
+            //不明白为什么一定要HighProfile
+            if (isHighProfile && !isH264HighProfileSupported(info)) {
+                return null;
+            }
         }
 
         return new HardwareVideoEncoder(new MediaCodecWrapperFactoryImpl(), codecName, type,
@@ -198,6 +203,7 @@ public class HardwareVideoEncoderFactory implements VideoEncoderFactory {
                 == null) {
             return false;
         }
+        // isMediaCodecAllowed(info)暂时还不知道是什么作用
         return isHardwareSupportedInCurrentSdk(info, type) && isMediaCodecAllowed(info);
     }
 
@@ -223,14 +229,21 @@ public class HardwareVideoEncoderFactory implements VideoEncoderFactory {
                 || (name.startsWith(EXYNOS_PREFIX) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
                 // Intel Vp8 encoder is supported in LOLLIPOP or later, with the intel encoder enabled.
                 || (name.startsWith(INTEL_PREFIX) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-                && enableIntelVp8Encoder);
+                && enableIntelVp8Encoder)
+                // webrtc默认支持的硬编码芯片没有门牌设备，自定义模块前缀，门牌端是rk模块开头
+                || (name.startsWith(RK_PREFIX)
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP);
+
     }
 
     private boolean isHardwareSupportedInCurrentSdkVp9(MediaCodecInfo info) {
         String name = info.getName();
         return (name.startsWith(QCOM_PREFIX) || name.startsWith(EXYNOS_PREFIX))
                 // Both QCOM and Exynos VP9 encoders are supported in N or later.
-                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+                // webrtc默认支持的硬编码芯片没有门牌设备，自定义模块前缀，门牌端是rk模块开头
+                || (name.startsWith(RK_PREFIX)
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP);
     }
 
     private boolean isHardwareSupportedInCurrentSdkH264(MediaCodecInfo info) {
@@ -244,7 +257,7 @@ public class HardwareVideoEncoderFactory implements VideoEncoderFactory {
                 // Exynos H264 encoder is supported in LOLLIPOP or later.
                 || (name.startsWith(EXYNOS_PREFIX)
                 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                // 自定义模块前缀，门牌端是rk模块开头
+                // webrtc默认支持的硬编码芯片没有门牌设备，自定义模块前缀，门牌端是rk模块开头
                 || (name.startsWith(RK_PREFIX)
                 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP);
     }
@@ -298,6 +311,7 @@ public class HardwareVideoEncoderFactory implements VideoEncoderFactory {
 
     private boolean isH264HighProfileSupported(MediaCodecInfo info) {
         return enableH264HighProfile && Build.VERSION.SDK_INT > Build.VERSION_CODES.M
-                && info.getName().startsWith(EXYNOS_PREFIX);
+                // webrtc的判断是EXYNOS_PREFIX才是具备HP的
+                && info.getName().startsWith(RK_PREFIX);
     }
 }

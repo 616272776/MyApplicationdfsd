@@ -54,6 +54,8 @@ class MediaCodecUtils {
       CodecCapabilities.COLOR_FormatYUV420Planar,
       CodecCapabilities.COLOR_FormatYUV420SemiPlanar,
       CodecCapabilities.COLOR_QCOM_FormatYUV420SemiPlanar,
+          // 添加新的，上面的是过期的
+          CodecCapabilities.COLOR_FormatYUV420Flexible,
       MediaCodecUtils.COLOR_QCOM_FORMATYUV420PackedSemiPlanar32m};
 
   // Color formats supported by texture mode encoding - in order of preference.

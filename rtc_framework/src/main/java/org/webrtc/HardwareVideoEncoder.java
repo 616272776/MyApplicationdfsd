@@ -200,7 +200,7 @@ class HardwareVideoEncoder implements VideoEncoder {
   }
 
   @Override
-  public VideoCodecStatus initEncode(Settings settings, Callback callback) {
+  public VideoCodecStatus  initEncode(Settings settings, Callback callback) {
     encodeThreadChecker.checkIsOnValidThread();
 
     this.callback = callback;
