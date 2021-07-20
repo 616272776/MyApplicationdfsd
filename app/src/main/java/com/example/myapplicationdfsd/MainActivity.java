@@ -81,16 +81,16 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     private String surfaceIndex1;
     private String surfaceIndex2;
     SurfaceViewRenderer[] remoteViews;
-    int remoteViewsIndex = 0;
+//    int remoteViewsIndex = 0;
     private int currVolume;
     private boolean onSpeaker = false;
 
-    private Button speaker;
-    private Button button;
-    private Button button2;
-    private Button button5;
-    private Button button6;
-    private Button button3;
+//    private Button speaker;
+//    private Button button;
+//    private Button button2;
+//    private Button button5;
+//    private Button button6;
+//    private Button button3;
     private AtomicBoolean mFunctionOpen = new AtomicBoolean(false);
 
     private AtomicBoolean mEquipmentNormal = new AtomicBoolean(false);
@@ -154,12 +154,12 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         Intent intent = new Intent(this, DoorplateSystemManagerService.class);
         startService(intent);
 
-        speaker = (Button) findViewById(R.id.speaker);
-        button = (Button) findViewById(R.id.button);
-        button2 = (Button) findViewById(R.id.button2);
-        button5 = (Button) findViewById(R.id.button5);
-        button6 = (Button) findViewById(R.id.button6);
-        button3 = (Button) findViewById(R.id.button3);
+//        speaker = (Button) findViewById(R.id.speaker);
+//        button = (Button) findViewById(R.id.button);
+//        button2 = (Button) findViewById(R.id.button2);
+//        button5 = (Button) findViewById(R.id.button5);
+//        button6 = (Button) findViewById(R.id.button6);
+//        button3 = (Button) findViewById(R.id.button3);
 
         AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         //最大音量
@@ -187,8 +187,8 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
                 new DefaultVideoDecoderFactory(eglBaseContext);
         peerConnectionFactory = PeerConnectionFactory.builder()
                 .setOptions(options)
-                .setVideoEncoderFactory(new HardwareVideoEncoderFactory(eglBaseContext, false, true))
-//                .setVideoEncoderFactory(defaultVideoEncoderFactory)
+//                .setVideoEncoderFactory(new HardwareVideoEncoderFactory(eglBaseContext, false, true))
+                .setVideoEncoderFactory(defaultVideoEncoderFactory)
                 .setVideoDecoderFactory(new HardwareVideoDecoderFactory(eglBaseContext))
                 .createPeerConnectionFactory();
 
@@ -276,9 +276,9 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
 //        function(null);
 //        startConnect(null);
 
-//        Intent mediaServiceIntent = new Intent(this, MediaService.class);
-//        bindService(mediaServiceIntent, mediaServiceConnection, Context.BIND_AUTO_CREATE);
-//        startService(mediaServiceIntent);
+        Intent mediaServiceIntent = new Intent(this, MediaService.class);
+        bindService(mediaServiceIntent, mediaServiceConnection, Context.BIND_AUTO_CREATE);
+        startService(mediaServiceIntent);
 
         Intent webRTCCommunicatorServer = new Intent(this, P2PCommunicationService.class);
         bindService(webRTCCommunicatorServer, communicationConnection, Context.BIND_AUTO_CREATE);
