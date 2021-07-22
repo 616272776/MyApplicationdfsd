@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class MediaService extends Service {
     public static final String TAG = "mediaService";
 
-    private AtomicBoolean doorplateVideoMediaRecordIsStart =new AtomicBoolean(true);
+    private AtomicBoolean doorplateVideoMediaRecordIsStart = new AtomicBoolean(true);
 
 
     private MediaDataQueue<MediaData> mAudioMediaRecordDataQueue;
@@ -49,11 +49,14 @@ public class MediaService extends Service {
     private MediaDataQueue<MediaData> mVideoMediaEncodeDataQueue;
 
     private DoorplateMediaMuxer doorplateMediaMuxer;
+//    private DoorplateMediaMuxer doorplateMediaMuxerTwo;
+//    boolean flag = false;
+//    DoorplateMediaMuxer temp = doorplateMediaMuxerOne;
 //    private MediaDataQueue<> mVideoMediaEncodeDataQueue;
 
 
     public class MyBinder extends Binder {
-        public MediaService getService(){
+        public MediaService getService() {
             return MediaService.this;
         }
     }
@@ -82,7 +85,7 @@ public class MediaService extends Service {
 
         AudioRecordConfig audioRecordConfig = new AudioRecordConfig(8192,
                 bytesPerFrame * framesPerBuffer,
-                MediaRecorder.AudioSource.VOICE_COMMUNICATION, audioFormat        );
+                MediaRecorder.AudioSource.VOICE_COMMUNICATION, audioFormat);
 
 
         // todo 门牌音频获取测试
@@ -96,8 +99,8 @@ public class MediaService extends Service {
 //                        if(MainActivity.mVideoRecordStarted.get() && !MyVideoEncoder.mAudioThreadCancel.get()){
 //                            MyVideoEncoder.mAudioOutBufferQueue.offer((AudioData)mediaData);
 //                        }
-                        if(doorplateAudioMediaRecord.isRecording()){
-                            mAudioMediaRecordDataQueue.offer((AudioData)mediaData);
+                        if (doorplateAudioMediaRecord.isRecording()) {
+                            mAudioMediaRecordDataQueue.offer((AudioData) mediaData);
                         }
                     }
                 });
@@ -127,13 +130,10 @@ public class MediaService extends Service {
         doorplateVideoMediaEncode.start();
 
         doorplateMediaMuxer = new DoorplateMediaMuxer();
-        doorplateMediaMuxer.init(InternalMemory.getMemoryPath("test1.mp4"));
+        doorplateMediaMuxer.init(InternalMemory.getMemoryPath(String.format("test/test-%s.mp4", System.currentTimeMillis())));
         doorplateMediaMuxer.setVideoMediaEncodeDataQueue(mVideoMediaEncodeDataQueue);
         doorplateMediaMuxer.setAudioMediaEncodeDataQueue(mAudioMediaEncodeDataQueue);
         doorplateMediaMuxer.start();
-
-
-
     }
 
     @Nullable
@@ -156,16 +156,16 @@ public class MediaService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if(doorplateAudioMediaRecord!=null){
+        if (doorplateAudioMediaRecord != null) {
             doorplateAudioMediaRecord.release();
         }
-        if(doorplateAudioMediaEncode!=null){
+        if (doorplateAudioMediaEncode != null) {
             doorplateAudioMediaEncode.release();
         }
 
     }
 
-    public void stop(){
+    public void stop() {
         doorplateMediaMuxer.release();
     }
 }

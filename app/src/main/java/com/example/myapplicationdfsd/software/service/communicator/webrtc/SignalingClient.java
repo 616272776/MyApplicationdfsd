@@ -43,7 +43,7 @@ public class SignalingClient {
     }
 
     private Socket socket;
-    private String room = "OldPlace";
+    public static String room = "OldPlace";
     private Callback callback;
 
     private final TrustManager[] trustAll = new TrustManager[]{

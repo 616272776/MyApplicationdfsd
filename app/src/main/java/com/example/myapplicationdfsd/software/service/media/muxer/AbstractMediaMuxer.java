@@ -54,11 +54,15 @@ public abstract class AbstractMediaMuxer {
             VideoMuxerThreadIsStarted.set(false);
             AudioMuxerThread.join();
             VideoMuxerThread.join();
+
             if (mMediaMuxer != null && mMediaMuxerIsStarted.get()) {
+                mMediaMuxerIsStarted.set(false);
                 mMediaMuxer.stop();
                 mMediaMuxer.release();
                 mMediaMuxer = null;
             }
+            mAudioTrackIndex = -1;
+            mVideoTrackIndex = -1;
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

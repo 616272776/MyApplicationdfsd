@@ -21,6 +21,7 @@ public abstract class AbstractVideoMediaEncode extends AbstractMediaCodec {
         mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, videoMediaEncodeConfig.width * videoMediaEncodeConfig.height * 6);
         mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 30);
         mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1);
+
         mediaCodec = MediaCodec.createEncoderByType(VIDEO_MIME_TYPE);
         mediaCodec.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
         } catch (IOException e) {

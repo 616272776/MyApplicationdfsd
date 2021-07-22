@@ -12,6 +12,7 @@ import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -20,6 +21,11 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 import com.example.myapplicationdfsd.software.activity.PoliceAffairsActivity;
 import com.example.myapplicationdfsd.software.service.P2PCommunicationService;
@@ -37,18 +43,23 @@ import org.webrtc.Camera1Enumerator;
 import org.webrtc.DefaultVideoDecoderFactory;
 import org.webrtc.DefaultVideoEncoderFactory;
 import org.webrtc.EglBase;
+import org.webrtc.HardwareVideoDecoderFactory;
+import org.webrtc.HardwareVideoEncoderFactory;
 import org.webrtc.IceCandidate;
 import org.webrtc.MediaConstraints;
 import org.webrtc.MediaStream;
 import org.webrtc.PeerConnection;
 import org.webrtc.PeerConnectionFactory;
 import org.webrtc.SessionDescription;
+import org.webrtc.SoftwareVideoDecoderFactory;
+import org.webrtc.SoftwareVideoEncoderFactory;
 import org.webrtc.SurfaceTextureHelper;
 import org.webrtc.SurfaceViewRenderer;
 import org.webrtc.VideoCapturer;
 import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -56,6 +67,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MainActivity extends AppCompatActivity implements SignalingClient.Callback {
 
+    private static final String TAG = "MainActivity";
     EglBase.Context eglBaseContext;
     PeerConnectionFactory peerConnectionFactory;
     SurfaceViewRenderer localView;
@@ -71,12 +83,12 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
     private int currVolume;
     private boolean onSpeaker = false;
 
-    private Button speaker;
-    private Button button;
-    private Button button2;
-    private Button button5;
-    private Button button6;
-    private Button button3;
+//    private Button speaker;
+//    private Button button;
+//    private Button button2;
+//    private Button button5;
+//    private Button button6;
+//    private Button button3;
     private AtomicBoolean mFunctionOpen = new AtomicBoolean(false);
 
     private AtomicBoolean mEquipmentNormal = new AtomicBoolean(false);
@@ -140,12 +152,12 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         Intent intent = new Intent(this, DoorplateSystemManagerService.class);
         startService(intent);
 
-        speaker = (Button) findViewById(R.id.speaker);
-        button = (Button) findViewById(R.id.button);
-        button2 = (Button) findViewById(R.id.button2);
-        button5 = (Button) findViewById(R.id.button5);
-        button6 = (Button) findViewById(R.id.button6);
-        button3 = (Button) findViewById(R.id.button3);
+//        speaker = (Button) findViewById(R.id.speaker);
+//        button = (Button) findViewById(R.id.button);
+//        button2 = (Button) findViewById(R.id.button2);
+//        button5 = (Button) findViewById(R.id.button5);
+//        button6 = (Button) findViewById(R.id.button6);
+//        button3 = (Button) findViewById(R.id.button3);
 
         AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         //最大音量
@@ -156,25 +168,8 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
 
         peerConnectionMap = new HashMap<>();
         iceServers = new ArrayList<>();
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun1.l.google.com:19302").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun2.l.google.com:19302").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun3.l.google.com:19302").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun4.l.google.com:19302").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:23.21.150.121").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun01.sipphone.com").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun.ekiga.net").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun.fwdnet.net").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun.ideasip.com").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun.iptel.org").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun.rixtelecom.se").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun.schlund.de").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stunserver.org").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun.softjoys.com").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun.voiparound.com").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun.voipbuster.com").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun.voipstunt.com").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun.voxgratia.org").createIceServer());
-        iceServers.add(PeerConnection.IceServer.builder("stun:stun.xten.com").createIceServer());
+        iceServers.add(PeerConnection.IceServer.builder("stun:139.224.12.1").createIceServer());
+        iceServers.add(PeerConnection.IceServer.builder("turn:139.224.12.1").setUsername("test").setPassword("123456").createIceServer());
         eglBaseContext = EglBase.create().getEglBaseContext();
 
         // create PeerConnectionFactory
@@ -188,7 +183,9 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
                 new DefaultVideoDecoderFactory(eglBaseContext);
         peerConnectionFactory = PeerConnectionFactory.builder()
                 .setOptions(options)
-                .setVideoEncoderFactory(defaultVideoEncoderFactory)
+                .setVideoEncoderFactory(new HardwareVideoEncoderFactory(eglBaseContext,true,true))
+//                .setVideoEncoderFactory(new SoftwareVideoEncoderFactory())
+//                .setVideoDecoderFactory(new HardwareVideoDecoderFactory(eglBaseContext))
                 .setVideoDecoderFactory(defaultMyVideoDecoderFactory)
                 .createPeerConnectionFactory();
 
@@ -230,10 +227,49 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         mediaStream = peerConnectionFactory.createLocalMediaStream("mediaStream");
         mediaStream.addTrack(videoTrack);
         mediaStream.addTrack(audioTrack);
+        if (DoorplateSystemManagerService.smatekManager == null) {
+            SignalingClient.room = "1";
 
+        } else {
+            String macAddress = DoorplateSystemManagerService.smatekManager.getEthMacAddress();
+            String url = "http://139.224.12.1:20880/getDoorplate/" + macAddress;
+            OkHttpClient okHttpClient = new OkHttpClient();
+            final Request request = new Request.Builder()
+                    .url(url)
+                    .get()//默认就是GET请求，可以不写
+                    .build();
+            Call call = okHttpClient.newCall(request);
+            call.enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    Log.d(TAG, "onFailure: ");
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    String doorplateNumber = response.body().string();
+                    Log.d(TAG, "onResponse: " + doorplateNumber);
+                    if (doorplateNumber.contains("false")) {
+
+                    } else {
+//                    startConnect(null);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(MainActivity.this, String.format("查询到门牌为%s，加入房间%s", doorplateNumber, doorplateNumber), Toast.LENGTH_SHORT).show();
+                                SignalingClient.room = doorplateNumber.substring(22, 40);
+                                SignalingClient.room = "520502103003011111";
+                                startConnect(null);
+                            }
+                        });
+                    }
+                }
+            });
+
+        }
 
 //        function(null);
-        startConnect(null);
+//        startConnect(null);
 
         Intent mediaServiceIntent = new Intent(this, MediaService.class);
         bindService(mediaServiceIntent, mediaServiceConnection, Context.BIND_AUTO_CREATE);

@@ -1,10 +1,19 @@
 package com.example.myapplicationdfsd.software.service.media.muxer;
 
+import android.media.MediaCodec;
 import android.media.MediaFormat;
 import com.example.myapplicationdfsd.software.service.media.data.MediaEncodeData;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class DoorplateMediaMuxer extends AbstractMediaMuxer {
     private final Object mLock = new Object();
+    private static MediaFormat mAudioMediaFormat;
+    private static MediaFormat mVideoMediaFormat;
+
+
+    private final AtomicBoolean mAudioTrack = new AtomicBoolean(false);
+    private final AtomicBoolean mVideoTrack = new AtomicBoolean(false);
     @Override
     public void init(String filePath) {
         super.init(filePath);
@@ -17,17 +26,22 @@ public class DoorplateMediaMuxer extends AbstractMediaMuxer {
                         continue;
                     }
                     MediaEncodeData mediaEncodeData = (MediaEncodeData)AudioMediaEncodeDataQueue.poll();
-                    MediaFormat mediaFormat = mediaEncodeData.getMediaFormat();
-                    if(mediaFormat==null){
+                    //判断是否为空，正常情况下队列的一个是带有媒体格式的
+                    if(mediaEncodeData.getMediaFormat()!=null){
+                        mAudioMediaFormat = mediaEncodeData.getMediaFormat();
+                    }
+                    if(mAudioTrack.get()){
                         if(mMediaMuxerIsStarted.get()){
+                            MediaCodec.BufferInfo bufferInfo = mediaEncodeData.getBufferInfo();
                             mMediaMuxer.writeSampleData(mAudioTrackIndex, mediaEncodeData.getEncodedData(), mediaEncodeData.getBufferInfo());
                         }
                     }else {
-                        mAudioTrackIndex = addAudioTrack(mediaEncodeData.getMediaFormat());
+                        mAudioTrackIndex = addAudioTrack(mAudioMediaFormat);
+                        mAudioTrack.set(true);
                         synchronized (mLock) {
-                            if (mVideoTrackIndex >= 0 && mVideoTrackIndex >= 0 && !mMediaMuxerIsStarted.get()) {
-                                mMediaMuxerIsStarted.set(true);
+                            if (mVideoTrackIndex >= 0 && mAudioTrackIndex >= 0 && !mMediaMuxerIsStarted.get()) {
                                 mMediaMuxer.start();
+                                mMediaMuxerIsStarted.set(true);
                             }
                         }
                     }
@@ -43,19 +57,24 @@ public class DoorplateMediaMuxer extends AbstractMediaMuxer {
                     }
                     MediaEncodeData mediaEncodeData = (MediaEncodeData)VideoMediaEncodeDataQueue.poll();
 
-                    MediaFormat mediaFormat = mediaEncodeData.getMediaFormat();
-                    if(mediaFormat==null ){
+
+                    //判断是否为空，正常情况下队列的一个是带有媒体格式的
+                    if(mediaEncodeData.getMediaFormat()!=null){
+                        mVideoMediaFormat = mediaEncodeData.getMediaFormat();
+                    }
+
+                    if(mVideoTrack.get()){
                         if(mMediaMuxerIsStarted.get()){
                             mMediaMuxer.writeSampleData(mVideoTrackIndex, mediaEncodeData.getEncodedData(), mediaEncodeData.getBufferInfo());
-
-
                         }
                     }else {
-                        mVideoTrackIndex = addVideoTrack(mediaFormat);
+                        mVideoTrackIndex = addVideoTrack(mVideoMediaFormat);
+                        mVideoTrack.set(true);
                         synchronized (mLock) {
-                            if (mVideoTrackIndex >= 0 && mVideoTrackIndex >= 0 && !mMediaMuxerIsStarted.get()) {
-                                mMediaMuxerIsStarted.set(true);
+                            mAudioMediaFormat =mVideoMediaFormat;
+                            if (mVideoTrackIndex >= 0 && mAudioTrackIndex >= 0 && !mMediaMuxerIsStarted.get()) {
                                 mMediaMuxer.start();
+                                mMediaMuxerIsStarted.set(true);
                             }
                         }
                     }
