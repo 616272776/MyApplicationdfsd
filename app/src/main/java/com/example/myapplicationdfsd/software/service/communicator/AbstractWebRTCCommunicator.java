@@ -82,7 +82,7 @@ public abstract class AbstractWebRTCCommunicator implements P2PCommunicationInte
         videoSource = peerConnectionFactory.createVideoSource(videoCapturer.isScreencast());
 
         videoCapturer.initialize(surfaceTextureHelper, applicationContext, videoSource.getCapturerObserver());
-        videoCapturer.startCapture(640, 480, 30);
+        videoCapturer.startCapture(1920,1080, 30);
     }
 
     private void createVideoTrack() {

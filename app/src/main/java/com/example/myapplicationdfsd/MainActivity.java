@@ -8,6 +8,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraManager;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -184,8 +186,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         peerConnectionFactory = PeerConnectionFactory.builder()
                 .setOptions(options)
                 .setVideoEncoderFactory(new HardwareVideoEncoderFactory(eglBaseContext,true,true))
-//                .setVideoEncoderFactory(new SoftwareVideoEncoderFactory())
-//                .setVideoDecoderFactory(new HardwareVideoDecoderFactory(eglBaseContext))
+//                .setVideoEncoderFactory(defaultVideoEncoderFactory)
                 .setVideoDecoderFactory(defaultMyVideoDecoderFactory)
                 .createPeerConnectionFactory();
 
@@ -195,7 +196,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
         videoSource = peerConnectionFactory.createVideoSource(videoCapturer.isScreencast());
 
         videoCapturer.initialize(surfaceTextureHelper, getApplicationContext(), videoSource.getCapturerObserver());
-        videoCapturer.startCapture(640, 480, 30);
+        videoCapturer.startCapture(960, 540, 30);
 
 
         localView = findViewById(R.id.localView);
@@ -467,6 +468,10 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
 
     @Override
     public void onPeerJoined(String socketId) {
+        MediaConstraints videoConstraints = new MediaConstraints();
+        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("minHeight", "640"));
+        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("minWidth", "960"));
+        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("minFrameRate", "20"));
         PeerConnection peerConnection = getOrCreatePeerConnection(socketId);
         peerConnection.createOffer(new SdpAdapter("createOfferSdp:" + socketId) {
             @Override
@@ -475,7 +480,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
                 peerConnection.setLocalDescription(new SdpAdapter("setLocalSdp:" + socketId), sessionDescription);
                 SignalingClient.get().sendSessionDescription(sessionDescription, socketId);
             }
-        }, new MediaConstraints());
+        }, videoConstraints);
     }
 
     @Override
@@ -507,6 +512,10 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
 
     @Override
     public void onOfferReceived(JSONObject data) {
+        MediaConstraints videoConstraints = new MediaConstraints();
+        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("minHeight", "640"));
+        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("minWidth", "960"));
+        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("minFrameRate", "20"));
         runOnUiThread(() -> {
             final String socketId = data.optString("from");
             PeerConnection peerConnection = getOrCreatePeerConnection(socketId);
@@ -519,7 +528,7 @@ public class MainActivity extends AppCompatActivity implements SignalingClient.C
                     peerConnectionMap.get(socketId).setLocalDescription(new SdpAdapter("setLocalSdp:" + socketId), sdp);
                     SignalingClient.get().sendSessionDescription(sdp, socketId);
                 }
-            }, new MediaConstraints());
+            }, videoConstraints);
 
         });
     }
